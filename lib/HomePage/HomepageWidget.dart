@@ -34,7 +34,6 @@ class HomepageState extends State<HomepageWidget> {
         ),
       ),
       leading: Icon(Icons.home),
-      backgroundColor: Colors.blueGrey[800],
     );
 
     Radius borderRadius = Radius.circular(10);
