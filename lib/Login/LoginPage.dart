@@ -13,29 +13,9 @@ class LoginState extends State<LoginPage> with SingleTickerProviderStateMixin {
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
-  // AnimationController _animController;
-  // WavePainter _wavePainter;
-  LoginPainter _loginPainter;
-
-  @override
-  void initState() {
-    super.initState();
-
-    // _animController = AnimationController(
-    //   duration: const Duration(milliseconds: 500),
-    //   vsync: this,
-    // )..repeat(reverse: true);
-    // _wavePainter = WavePainter(_animController);
-    // _animController.addStatusListener((status) {
-    //   _wavePainter.recalcOffsets(status);
-    // });
-
-    _loginPainter = LoginPainter();
-  }
 
   @override
   void dispose() {
-    // _animController.dispose();
     usernameController.dispose();
     passwordController.dispose();
     super.dispose();
@@ -112,11 +92,6 @@ class LoginState extends State<LoginPage> with SingleTickerProviderStateMixin {
       ),
     );
 
-    CustomPaint painter = CustomPaint(
-      size: Size(MediaQuery.of(context).size.width * 2, MediaQuery.of(context).size.height),
-      painter: _loginPainter,
-    );
-
     var children = widget.isSignUp
         ? [
             logo,
@@ -161,7 +136,7 @@ class LoginState extends State<LoginPage> with SingleTickerProviderStateMixin {
                 ),
               ),
             ),
-            SizedBox(height: 160),
+            SizedBox(height: 20),
           ]
         : [
             logo,
@@ -179,7 +154,7 @@ class LoginState extends State<LoginPage> with SingleTickerProviderStateMixin {
               ),
             ),
             Text("Forgot Password?"),
-            SizedBox(height: 160),
+            SizedBox(height: 20),
           ];
     Widget column = Padding(
       padding: EdgeInsets.all(30),
@@ -192,13 +167,9 @@ class LoginState extends State<LoginPage> with SingleTickerProviderStateMixin {
     return Scaffold(
       appBar: appBar,
       body: Center(
-        child: Stack(
-          children: [
-            painter,
-            column,
-          ],
-        ),
+        child: column,
       ),
     );
   }
+
 }
