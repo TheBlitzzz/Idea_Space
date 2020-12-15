@@ -25,6 +25,7 @@ class SettingsState extends State<SettingsPage> {
               child: Text(
                 "Setting $index",
                 style: TextStyle(fontSize: 25),
+                color: Colors.pink,
               ),
             ),
           );
