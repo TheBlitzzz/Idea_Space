@@ -5,7 +5,7 @@ import 'Login/Login.dart';
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    String title = "Hello World";
+    String title = "Hello, User";
     ThemeData theme = ThemeData(
       primarySwatch: Colors.teal,
       brightness: Brightness.values[0],
