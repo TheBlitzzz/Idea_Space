@@ -9,6 +9,4 @@ import 'dart:ui' as ui;
 
 part 'LoginPage.dart';
 
-part 'LoginPainter.dart';
-
 part 'WavePainter.dart';
