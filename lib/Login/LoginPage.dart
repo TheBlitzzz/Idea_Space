@@ -1,8 +1,6 @@
 part of login;
 
 class LoginPage extends StatefulWidget {
-  LoginPage();
-
   @override
   State<StatefulWidget> createState() => LoginState();
 }
@@ -194,7 +192,6 @@ class LoginState extends State<LoginPage> with TickerProviderStateMixin {
       _loginButton(isSignUp ? "Sign Up" : "Login"),
       _switchButton(),
       _forgetPassword(),
-      SizedBox(height: 100),
     ];
 
     // Text("Forgot Password?"),
