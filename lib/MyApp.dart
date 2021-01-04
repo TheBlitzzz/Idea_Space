@@ -7,14 +7,14 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     String title = "Hello, User";
     ThemeData theme = ThemeData(
-      primarySwatch: Colors.teal,
-      brightness: Brightness.values[0],
+      // primarySwatch: Colors.grey,
+      brightness: Brightness.dark,
     );
 
     return MaterialApp(
       title: title,
       theme: theme,
-      home: LoginPage(),
+      home: Login(),
     );
   }
 }
