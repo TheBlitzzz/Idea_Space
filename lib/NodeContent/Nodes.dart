@@ -13,6 +13,8 @@ part 'NodeLink.dart';
 
 part 'SettingsPage.dart';
 
+part 'NodeEditorPage1.dart';
+
 // class NestedMindMapNode extends BaseNode {
 //   List<ContentNode> nodes;
 //
