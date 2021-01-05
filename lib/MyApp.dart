@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:idea_space/HomePage/Homepage.dart';
 import 'package:idea_space/MindMap/MindMap.dart';
+import 'package:idea_space/NodeContent/Nodes.dart';
 import 'Login/Login.dart';
 import 'NodeContent/Nodes.dart';
 
