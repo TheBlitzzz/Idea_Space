@@ -11,7 +11,9 @@ class MindMapEditorState extends State<MindMapEditorPage> with TickerProviderSta
   List<Widget> nodeLinks = List();
   Offset editorToolsPosition;
   int lastSelectedNodeIndex;
-
+  bool isEditingTitle = false;
+  String title = "New MindMap";
+  TextEditingController titleController ;
   FloatingActionButton floatingButton;
 
   bool isLinking = false;
@@ -26,6 +28,7 @@ class MindMapEditorState extends State<MindMapEditorPage> with TickerProviderSta
   @override
   void initState() {
     super.initState();
+    titleController = TextEditingController ();
     viewerTransformation = TransformationController();
 
     editorToolsController = AnimationController(
@@ -90,6 +93,7 @@ class MindMapEditorState extends State<MindMapEditorPage> with TickerProviderSta
   @override
   void dispose() {
     super.dispose();
+    titleController.dispose();
     viewerTransformation.dispose();
     editorToolsController.dispose();
   }
@@ -97,11 +101,35 @@ class MindMapEditorState extends State<MindMapEditorPage> with TickerProviderSta
   @override
   Widget build(BuildContext context) {
     AppBar bar = AppBar(
-      title: Text(
-        "New Mind Map",
-        style: TextStyle(color: Colors.white),
+      title: isEditingTitle ?
+      TextField(
+        autofocus: true,
+          controller: titleController..text = title,
+          decoration: InputDecoration(
+              border: InputBorder.none,
+              hintText: 'Title'
+      ),
+        onSubmitted: (value){
+            setState(() {
+              isEditingTitle = false;
+              title = value;
+              debugPrint ("submitting");
+            });
+        },
+      ): GestureDetector(
+          onLongPress: () {
+            setState(() {
+              isEditingTitle = true;
+              debugPrint ("changing title");
+            });
+          },
+    child: Text(
+    title,
+    style: TextStyle(color: Colors.white),
+      ),
       ),
       actions: [
+
         IconButton(
           icon: Icon(Icons.undo),
           onPressed: () => debugPrint("UNDOING"),
