@@ -1,10 +1,10 @@
 part of nodes;
 
 class NodeEditorPage extends StatefulWidget {
-  final BaseNode node;
-  final MindMapEditorState rootMindMap;
+  // final BaseNode node;
+  // final MindMapEditorState rootMindMap;
 
-  NodeEditorPage(this.node, this.rootMindMap);
+  // NodeEditorPage(this.node, this.rootMindMap);
 
   @override
   State<StatefulWidget> createState() {
@@ -31,7 +31,7 @@ class NodeEditorState extends State<NodeEditorPage> {
 
   @override
   Widget build(BuildContext context) {
-    nodeTitleController.text = widget.node.title;
+    // nodeTitleController.text = widget.node.title;
     nodeTitleController.selection = TextSelection.fromPosition(TextPosition(offset: nodeTitleController.text.length));
 
     Widget nodeTitleField = TextField(
@@ -40,7 +40,7 @@ class NodeEditorState extends State<NodeEditorPage> {
       keyboardType: TextInputType.multiline,
       maxLines: null,
       textInputAction: TextInputAction.done,
-      onChanged: (String value) => setState(() => widget.node.title = value),
+      // onChanged: (String value) => setState(() => widget.node.title = value),
       controller: nodeTitleController,
     );
 
@@ -205,8 +205,8 @@ class NodeEditorState extends State<NodeEditorPage> {
   }
 
   void backToMindMap() {
-    widget.rootMindMap.selectNode((widget.node.id));
-    widget.rootMindMap.deselectActiveSelection();
+    // widget.rootMindMap.selectNode((widget.node.id));
+    // widget.rootMindMap.deselectActiveSelection();
     Navigator.of(context).pop();
   }
 

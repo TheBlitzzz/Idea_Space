@@ -164,7 +164,7 @@ class SelectedNodeState extends State<SelectedNodeWidget> {
   void _openNode() {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => NodeEditorPage(widget.node, widget.rootMindMap)),
+      MaterialPageRoute(builder: (context) => NodeEditorPage()),
     );
   }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:idea_space/MindMap/MindMap.dart';
 import 'Login/Login.dart';
+import 'NodeContent/Nodes.dart';
 
 class MyApp extends StatelessWidget {
   @override
@@ -14,7 +15,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: title,
       theme: theme,
-      home: Login(),
+      home: NodeEditorPage(),
     );
   }
 }
