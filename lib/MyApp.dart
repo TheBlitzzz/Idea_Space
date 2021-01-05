@@ -17,7 +17,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: title,
       theme: theme,
-      home: MindMapEditorPage(),
+      home: NodeEditorContent(),
     );
   }
 }
