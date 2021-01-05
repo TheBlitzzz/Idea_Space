@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:idea_space/HomePage/Homepage.dart';
 import 'package:idea_space/MindMap/MindMap.dart';
+import 'package:idea_space/NodeContent/Nodes.dart';
 import 'Login/Login.dart';
 
 class MyApp extends StatelessWidget {
@@ -15,7 +16,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: title,
       theme: theme,
-      home: HomePage(),
+      home: NodeEditorPage(),
     );
   }
 }
