@@ -16,24 +16,18 @@ extension WidgetTransforms on Widget {
   }
 
   /// Wraps the widget with a Positioned widget.
-  Positioned setPosition(Offset offset) {
-    return Positioned(
-      top: offset.dy,
-      left: offset.dx,
-      child: this,
-    );
-  }
+  Widget wrapPositioned(double dx, double dy) => Positioned(top: dy, left: dx, child: this);
+
+  /// Wraps the widget with a Positioned widget.
+  Widget setPosition(Offset offset) => this.wrapPositioned(offset.dx, offset.dy);
 
   /// Wraps the widget with a SizedBox widget.
-  SizedBox setSize(Size size) {
-    return SizedBox(
-      width: size.width,
-      height: size.height,
-      child: this,
-    );
-  }
+  Widget wrapSized(double width, double height) => SizedBox(width: width, height: height, child: this);
 
-  Container setDecoration(Size size, BoxDecoration decoration, {BoxConstraints constraints}) {
+  /// Wraps the widget with a SizedBox widget.
+  Widget setSize(Size size) => SizedBox(width: size.width, height: size.height, child: this);
+
+  Widget setDecoration(Size size, BoxDecoration decoration, {BoxConstraints constraints}) {
     return Container(
       width: size.width,
       height: size.height,
@@ -42,4 +36,6 @@ extension WidgetTransforms on Widget {
       child: this,
     );
   }
+
+  Widget align(Alignment alignment) => Align(alignment: alignment, child: this);
 }

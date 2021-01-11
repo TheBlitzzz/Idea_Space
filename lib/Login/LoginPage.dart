@@ -232,7 +232,7 @@ class _LoginState extends State<Login> {
           child: SingleChildScrollView(
               padding: EdgeInsets.all(40.0),
               child: Column(children: [
-                Image.asset("assets/IdeaspaceLogo.png"),
+                Image.asset("assets/Ideaspacelogo.png"),
                 SizedBox(height: 50),
                 TextField(
                   controller: usernameController,
@@ -272,17 +272,17 @@ class _LoginState extends State<Login> {
                             borderRadius: BorderRadius.circular(18),
                           ),
                         ),
-                        backgroundColor: MaterialStateProperty.all(
-                            Color.fromRGBO(104, 127, 154, 10)),
+                        backgroundColor: MaterialStateProperty.all(Color.fromRGBO(104, 127, 154, 10)),
                       ),
                       child: Text("Login",
                           style: TextStyle(
                             color: Colors.black,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 20,
-                        )
-                      ),
-                      onPressed: () {},
+                            fontWeight: FontWeight.bold,
+                            fontSize: 20,
+                          )),
+                      onPressed: () {
+                        Navigator.of(context).push(MaterialPageRoute(builder: (context) => HomePage(FileIndexer())));
+                      },
                     ),
                   ),
                 ),
@@ -290,26 +290,27 @@ class _LoginState extends State<Login> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     TextButton(
-                      child: Text("Sign Up",
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.blue[600],
-                        decoration: TextDecoration.underline,
+                      child: Text(
+                        "Sign Up",
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.blue[600],
+                          decoration: TextDecoration.underline,
                         ),
                       ),
                     ),
                     TextButton(
-                      child: Text("Forgot Password?",
+                      child: Text(
+                        "Forgot Password?",
                         style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.blue[600],
-                            decoration: TextDecoration.underline,
+                          fontSize: 14,
+                          color: Colors.blue[600],
+                          decoration: TextDecoration.underline,
                         ),
                       ),
                     ),
                   ],
                 ),
-
               ])),
         ));
   }

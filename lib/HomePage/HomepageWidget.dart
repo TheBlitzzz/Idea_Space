@@ -85,20 +85,18 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _createSearchBar() {
-    Widget title = Align(
-      alignment: Alignment.centerLeft,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: [
-          IconButton(
-            iconSize: 24,
-            icon: Icon(Icons.menu),
-            onPressed: () {},
-          ),
-          Text("User's Space", style: TextStyle(fontSize: 20)),
-        ],
-      ),
-    );
+    Widget titleRow = Row(
+      mainAxisAlignment: MainAxisAlignment.start,
+      children: [
+        IconButton(
+          iconSize: 24,
+          icon: Icon(Icons.menu),
+          onPressed: () {},
+        ),
+        Text("User's Space", style: TextStyle(fontSize: 20)),
+      ],
+    )..align(Alignment.centerLeft);
+
     Widget searchField = TextField(
       controller: _searchController,
       decoration: InputDecoration(
@@ -125,7 +123,7 @@ class _HomePageState extends State<HomePage> {
       child: Column(
         children: [
           SizedBox(height: _appBarOffset),
-          title,
+          titleRow,
           SizedBox(height: 10),
           searchField,
         ],
@@ -160,7 +158,7 @@ class _HomePageState extends State<HomePage> {
     var fileData = searchDomain[index];
     Widget button = InkWell(
       borderRadius: BorderRadius.circular(10),
-      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => MindMapEditorPage())),
+      onTap: () => _openMindMap(),
     );
     Widget lastEdit = Text(
       fileData.lastEditTime.toString(),
@@ -226,6 +224,7 @@ class _HomePageState extends State<HomePage> {
 
   Widget _createBottomNavigationBar() {
     return BottomNavigationBar(
+      type: BottomNavigationBarType.fixed,
       currentIndex: _selectedIndex,
       items: [
         BottomNavigationBarItem(
@@ -277,6 +276,8 @@ class _HomePageState extends State<HomePage> {
       searchDomain.sort((a, b) => a.title.compareTo(b.title));
     });
   }
+
+  void _openMindMap() => Navigator.push(context, MaterialPageRoute(builder: (context) => MindMapEditorPage()));
 }
 
 // Widget _createDocumentTab() {
