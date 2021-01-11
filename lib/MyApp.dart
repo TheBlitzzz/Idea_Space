@@ -10,8 +10,9 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     String title = "Hello, User";
     ThemeData theme = ThemeData(
-      // primarySwatch: Colors.grey,
+      primarySwatch: Colors.grey,
       brightness: Brightness.dark,
+      textSelectionColor: Colors.grey,
     );
 
     return MaterialApp(
