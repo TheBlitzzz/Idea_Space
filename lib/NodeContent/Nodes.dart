@@ -2,6 +2,7 @@ library nodes;
 
 import 'package:flutter/material.dart';
 import '../MindMap/MindMap.dart';
+import 'package:flutter/cupertino.dart';
 
 part 'BaseNode.dart';
 
@@ -14,6 +15,8 @@ part 'NodeLink.dart';
 part 'SettingsPage.dart';
 
 part 'NodeEditorPage1.dart';
+
+
 
 // class NestedMindMapNode extends BaseNode {
 //   List<ContentNode> nodes;
