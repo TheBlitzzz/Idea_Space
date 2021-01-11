@@ -17,24 +17,18 @@ class _NodeEditorContentState extends State<NodeEditorContent> {
       noteDescription[i].dispose();
     }
   }
+
   List<Widget> textBlock = <Widget>[];
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
-      appBar: AppBar(
-          backgroundColor: Color(0xff1B1B2F),
-          title: Text("Node-1"),
-          leading: IconButton(
-            icon: Icon(Icons.arrow_back_ios),
-          ),
-          actions: <Widget>[
-            IconButton(
-              icon: Icon(Icons.menu),
-              iconSize: 25,
-              onPressed: () {},
-            ),
-          ]),
+      appBar: AppBar(backgroundColor: Color(0xff1B1B2F), title: Text("Node-1"), actions: <Widget>[
+        IconButton(
+          icon: Icon(Icons.menu),
+          iconSize: 25,
+          onPressed: () {},
+        ),
+      ]),
       // bottomNavigationBar: BottomAppBar(
       //     shape: AutomaticNotchedShape(
       //       RoundedRectangleBorder(
@@ -131,34 +125,38 @@ class _NodeEditorContentState extends State<NodeEditorContent> {
         onPressed: () {
           setState(() {
             noteDescription.add(TextEditingController());
-            textBlock.add(Padding(
-              padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
-              key: ValueKey('${noteDescription.length}'),
-              child: Stack(
-                children: [
-                  Icon(
-                    Icons.menu,
-                  ),
-                  Padding(
-                    padding: EdgeInsets.only(left:40.0),
-                    child: TextField(
-                      controller: noteDescription[noteDescription.length-1],
-                      decoration: InputDecoration(
-                        focusedBorder: OutlineInputBorder(
-                          borderSide: BorderSide(
-                            color: Colors.blue,
-                            width: 2,
-                          ),
-                          borderRadius: const BorderRadius.all(
-                            const Radius.circular(10.0),
+            textBlock.add(
+              Padding(
+                padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
+                key: ValueKey('${noteDescription.length}'),
+                child: Stack(
+                  children: [
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Icon(
+                        Icons.menu,
+                      ),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.only(left: 40.0),
+                      child: TextField(
+                        controller: noteDescription[noteDescription.length - 1],
+                        decoration: InputDecoration(
+                          focusedBorder: OutlineInputBorder(
+                            borderSide: BorderSide(
+                              color: Colors.blue,
+                              width: 2,
+                            ),
+                            borderRadius: const BorderRadius.all(
+                              const Radius.circular(10.0),
+                            ),
                           ),
                         ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
             );
           });
         },
