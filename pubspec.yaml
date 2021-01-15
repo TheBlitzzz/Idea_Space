@@ -40,6 +40,8 @@ dev_dependencies:
     sdk: flutter
 
   # Used to encode and decode data into and from JSON format.
+  # JSON serialization : Run the command 'flutter pub run build_runner watch' to
+  # enable auto-build for the JSON serialization boilerplate.
   build_runner: 1.10.11
   json_serializable: 3.5.1
 

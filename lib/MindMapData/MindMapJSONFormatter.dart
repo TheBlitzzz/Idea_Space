@@ -3,6 +3,7 @@ library mind_map_data;
 import 'dart:convert';
 import 'dart:async';
 import 'dart:io';
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:path/path.dart' as p;
@@ -15,5 +16,7 @@ part 'FileIndexModel.dart';
 part 'MindMapModel.dart';
 
 part 'NodeModel.dart';
+
+part 'FileListType.dart';
 
 part 'MindMapJSONFormatter.g.dart';

@@ -2,16 +2,10 @@ part of mind_map_data;
 
 @JsonSerializable()
 class FileIndexModel {
-  List<MindMapModel> allInLocalMachine;
-  List<MindMapModel> recentFiles;
-  List<MindMapModel> favouriteFiles;
-  List<MindMapModel> sharedFiles;
+  List<MindMapModel> allFiles;
 
   FileIndexModel() {
-    allInLocalMachine = [];
-    recentFiles = [];
-    favouriteFiles = [];
-    sharedFiles = [];
+    allFiles = [];
   }
 
   factory FileIndexModel.fromJson(Map<String, dynamic> json) => _$FileIndexModelFromJson(json);
