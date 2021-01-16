@@ -10,11 +10,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  static const double _itemSize = 60,
-      _appBarOffset = 50,
-      // _bottomButtonSpacing = 40,
-      // _navigationBarIconSize = 32,
-      _borderRadius = 20;
+  static const double _itemSize = 60, _borderRadius = 20;
   final TextEditingController _searchController = TextEditingController();
   int _selectedIndex = 0;
   List<MindMapModel> searchDomain;
@@ -40,10 +36,13 @@ class _HomePageState extends State<HomePage> {
       ],
     );
     return Scaffold(
-      // appBar: appBar,
+      appBar: new AppBar(
+        title: Text("User's Space"),
+      ),
       body: Center(
         child: stack,
       ),
+      drawer: _createSettingsDrawer(),
       floatingActionButton: FloatingActionButton(
         child: Icon(Icons.add, size: 36),
         onPressed: () => showDialog(context: context, builder: (_) => _createAddMindMapDialog()),
@@ -63,7 +62,7 @@ class _HomePageState extends State<HomePage> {
         FlatButton(
           child: Text('Create mind map!'),
           onPressed: () {
-            setState(() => widget.files.addNewFile(MindMapModel(mindMapName, mindMapName, DateTime.now())));
+            setState(() => widget.files.addNewFile(MindMapModel("$mindMapName.map", mindMapName, DateTime.now())));
             _searchFile();
             Navigator.of(context).pop();
           },
@@ -78,18 +77,46 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  Widget _createSettingsDrawer() {
+    var aboutWidgets = [
+      Text(
+        "Hello",
+        textAlign: TextAlign.left,
+      ),
+      Text("Hello"),
+      Text("Hello"),
+    ];
+
+    return Drawer(
+      child: ListView(
+        padding: EdgeInsets.zero,
+        children: <Widget>[
+          DrawerHeader(
+            child: Text('Settings', style: TextStyle(fontSize: 40)),
+            duration: const Duration(milliseconds: 500),
+            decoration: BoxDecoration(color: Colors.blue),
+          ).wrapSized(height: 150),
+          ExpandableBoxWidget(24, [], "Account"),
+          ExpandableBoxWidget(24, [], "Theme colour"),
+          ExpandableBoxWidget(24, [], "Notification settings"),
+          ExpandableBoxWidget(24, aboutWidgets, "About"),
+        ],
+      ),
+    );
+  }
+
   Widget _createSearchBar() {
-    Widget titleRow = Row(
-      mainAxisAlignment: MainAxisAlignment.start,
-      children: [
-        IconButton(
-          iconSize: 24,
-          icon: Icon(Icons.menu),
-          onPressed: () {},
-        ),
-        Text("User's Space", style: TextStyle(fontSize: 20)),
-      ],
-    )..align(Alignment.centerLeft);
+    // Widget titleRow = Row(
+    //   mainAxisAlignment: MainAxisAlignment.start,
+    //   children: [
+    //     IconButton(
+    //       iconSize: 24,
+    //       icon: Icon(Icons.menu),
+    //       onPressed: () {},
+    //     ),
+    //     Text("User's Space", style: TextStyle(fontSize: 20)),
+    //   ],
+    // )..align(Alignment.centerLeft);
     Widget searchField = TextField(
       controller: _searchController,
       decoration: InputDecoration(
@@ -113,8 +140,8 @@ class _HomePageState extends State<HomePage> {
     );
     return Column(
       children: [
-        SizedBox(height: _appBarOffset),
-        titleRow,
+        // SizedBox(height: _appBarOffset),
+        // titleRow,
         SizedBox(height: 10),
         searchField,
       ],
@@ -157,7 +184,7 @@ class _HomePageState extends State<HomePage> {
 
   Widget _createDocumentList() {
     return Container(
-      padding: EdgeInsets.only(top: 140 + _appBarOffset),
+      padding: EdgeInsets.only(top: 80, left: 10, right: 10),
       child: Container(
         decoration: BoxDecoration(
           color: Color.fromARGB(255, 31, 64, 104),
@@ -167,7 +194,7 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
         child: ListView.builder(
-          clipBehavior: Clip.hardEdge,
+          // clipBehavior: Clip.hardEdge,
           shrinkWrap: true,
           padding: EdgeInsets.only(left: 10, right: 10),
           itemBuilder: _createDocumentItem,
@@ -185,15 +212,10 @@ class _HomePageState extends State<HomePage> {
     // File Icon
     children.add(Icon(
       Icons.menu_book,
-      size: _itemSize,
+      size: _itemSize * 0.8,
     ).align(Alignment.centerLeft));
 
-    Widget title = Text(data.title);
-    Widget lastEdit = Text(
-      data.lastEditTime.toString(),
-      style: TextStyle(fontSize: 10),
-      textAlign: TextAlign.center,
-    );
+    // Title and last edit
     children.add(Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -201,7 +223,7 @@ class _HomePageState extends State<HomePage> {
         SizedBox(height: 5),
         Text(data.getLastEditTime, style: TextStyle(fontSize: 11)).align(Alignment.centerLeft),
       ],
-    ).pad(_itemSize + 20, 0, 0, 0));
+    ).pad(_itemSize, 0, 0, 0));
 
     // bottom divider
     children.add(Container(
@@ -213,9 +235,9 @@ class _HomePageState extends State<HomePage> {
 
     // button to open the file
     children.add(InkWell(
-      borderRadius: BorderRadius.circular(10),
       onTap: () => _openMindMap(),
     ));
+
     // more button
     children.add(IconButton(
       icon: Icon(Icons.more_horiz),
@@ -227,7 +249,7 @@ class _HomePageState extends State<HomePage> {
     return Stack(
       fit: StackFit.expand,
       children: children,
-    );
+    ).pad(10, 10, 5, 5);
   }
 
   Widget _createBottomNavigationBar() {
@@ -258,6 +280,7 @@ class _HomePageState extends State<HomePage> {
       selectedItemColor: Colors.white,
       unselectedItemColor: Colors.grey[600],
       onTap: (index) => setState(() {
+        if (index == 3) return;
         _selectedIndex = index;
         searchDomain = widget.files.getFiles(FileListType.values[_selectedIndex]);
       }),
@@ -289,6 +312,7 @@ class _HomePageState extends State<HomePage> {
     searchDomain = tempDomain;
   }
 
+  //todo add title parameter
   void _openMindMap() => Navigator.push(context, MaterialPageRoute(builder: (context) => MindMapEditorPage()));
 }
 

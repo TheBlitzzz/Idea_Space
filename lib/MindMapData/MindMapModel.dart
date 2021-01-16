@@ -21,4 +21,8 @@ class MindMapModel {
   factory MindMapModel.fromJson(Map<String, dynamic> json) => _$MindMapModelFromJson(json);
 
   Map<String, dynamic> toJson() => _$MindMapModelToJson(this);
+
+  void updateLastEdit() {
+    lastEditTime = DateTime.now();
+  }
 }
