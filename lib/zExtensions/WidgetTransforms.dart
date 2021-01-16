@@ -38,4 +38,12 @@ extension WidgetTransforms on Widget {
   }
 
   Widget align(Alignment alignment) => Align(alignment: alignment, child: this);
+
+  /// Wraps the widget with a padding widget with an EdgeInsets.all() padding.
+  Widget pad(double left, double right, double top, double bottom) {
+    return Padding(
+      padding: EdgeInsets.only(left: left, right: right, top: top, bottom: bottom),
+      child: this,
+    );
+  }
 }

@@ -10,7 +10,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  static const double _itemSize = 50,
+  static const double _itemSize = 60,
       _appBarOffset = 50,
       // _bottomButtonSpacing = 40,
       // _navigationBarIconSize = 32,
@@ -22,7 +22,6 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    searchDomain = widget.files.data.allInLocalMachine;
   }
 
   @override
@@ -36,7 +35,7 @@ class _HomePageState extends State<HomePage> {
     Widget stack = Stack(
       fit: StackFit.expand,
       children: [
-        _createDocumentList(),
+        _createCenterList(),
         _createSearchBar(),
       ],
     );
@@ -47,40 +46,35 @@ class _HomePageState extends State<HomePage> {
       ),
       floatingActionButton: FloatingActionButton(
         child: Icon(Icons.add, size: 36),
-        onPressed: () {
-          showDialog(
-            context: context,
-            builder: (_) {
-              String mindMapName = "Untitled";
-              return new AlertDialog(
-                title: new Text("Creating a new Mind Map"),
-                content: new TextField(
-                  onChanged: (name) => mindMapName = name,
-                ),
-                actions: <Widget>[
-                  FlatButton(
-                    child: Text('Create mind map!'),
-                    onPressed: () {
-                      setState(() {
-                        widget.files.data.allInLocalMachine.add(MindMapModel(mindMapName, mindMapName, DateTime.now()));
-                      });
-                      _searchFile();
-                      Navigator.of(context).pop();
-                    },
-                  ),
-                  FlatButton(
-                    child: Text('Never mind'),
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                  )
-                ],
-              );
-            },
-          );
-        },
+        onPressed: () => showDialog(context: context, builder: (_) => _createAddMindMapDialog()),
       ),
       bottomNavigationBar: _createBottomNavigationBar(),
+    );
+  }
+
+  Widget _createAddMindMapDialog() {
+    String mindMapName = "Untitled";
+    return AlertDialog(
+      title: new Text("Creating a new Mind Map"),
+      content: new TextField(
+        onChanged: (name) => mindMapName = name,
+      ),
+      actions: <Widget>[
+        FlatButton(
+          child: Text('Create mind map!'),
+          onPressed: () {
+            setState(() => widget.files.addNewFile(MindMapModel(mindMapName, mindMapName, DateTime.now())));
+            _searchFile();
+            Navigator.of(context).pop();
+          },
+        ),
+        FlatButton(
+          child: Text('Never mind'),
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+        )
+      ],
     );
   }
 
@@ -96,7 +90,6 @@ class _HomePageState extends State<HomePage> {
         Text("User's Space", style: TextStyle(fontSize: 20)),
       ],
     )..align(Alignment.centerLeft);
-
     Widget searchField = TextField(
       controller: _searchController,
       decoration: InputDecoration(
@@ -118,17 +111,48 @@ class _HomePageState extends State<HomePage> {
       ),
       onChanged: (searchTerm) => _searchFile(searchTerm: searchTerm),
     );
-    return Padding(
-      padding: EdgeInsets.all(10),
-      child: Column(
-        children: [
-          SizedBox(height: _appBarOffset),
-          titleRow,
-          SizedBox(height: 10),
-          searchField,
-        ],
-      ),
+    return Column(
+      children: [
+        SizedBox(height: _appBarOffset),
+        titleRow,
+        SizedBox(height: 10),
+        searchField,
+      ],
+    ).pad(10, 10, 10, 10);
+  }
+
+  Widget _createCenterList() {
+    Widget builder = FutureBuilder<FileIndexModel>(
+      future: widget.files.readFileIndex,
+      builder: (context, snapShot) {
+        if (searchDomain != null) {
+          return _createDocumentList();
+        }
+        if (snapShot.hasData) {
+          searchDomain = snapShot.data.allFiles;
+          return _createDocumentList();
+        } else {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: <Widget>[
+                SizedBox(
+                  child: CircularProgressIndicator(),
+                  width: 60,
+                  height: 60,
+                ),
+                const Padding(
+                  padding: EdgeInsets.only(top: 16),
+                  child: Text('Awaiting result...'),
+                )
+              ],
+            ),
+          );
+        }
+      },
     );
+    return builder;
   }
 
   Widget _createDocumentList() {
@@ -155,70 +179,54 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _createDocumentItem(BuildContext context, int index) {
-    var fileData = searchDomain[index];
-    Widget button = InkWell(
-      borderRadius: BorderRadius.circular(10),
-      onTap: () => _openMindMap(),
-    );
+    var data = searchDomain[index];
+    var children = new List<Widget>();
+
+    // File Icon
+    children.add(Icon(
+      Icons.menu_book,
+      size: _itemSize,
+    ).align(Alignment.centerLeft));
+
+    Widget title = Text(data.title);
     Widget lastEdit = Text(
-      fileData.lastEditTime.toString(),
+      data.lastEditTime.toString(),
       style: TextStyle(fontSize: 10),
       textAlign: TextAlign.center,
     );
-    Widget icon = Icon(
-      Icons.menu_book,
-      size: _itemSize,
-    );
-    Widget moreButton = IconButton(
+    children.add(Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text(data.title, style: TextStyle(fontSize: 20)).align(Alignment.centerLeft),
+        SizedBox(height: 5),
+        Text(data.getLastEditTime, style: TextStyle(fontSize: 11)).align(Alignment.centerLeft),
+      ],
+    ).pad(_itemSize + 20, 0, 0, 0));
+
+    // bottom divider
+    children.add(Container(
+      height: 2,
+      decoration: BoxDecoration(
+        color: Colors.white,
+      ),
+    ).align(Alignment.bottomCenter));
+
+    // button to open the file
+    children.add(InkWell(
+      borderRadius: BorderRadius.circular(10),
+      onTap: () => _openMindMap(),
+    ));
+    // more button
+    children.add(IconButton(
       icon: Icon(Icons.more_horiz),
       onPressed: () {
         debugPrint("More Options");
       },
-    );
-    Widget title = Text(fileData.title);
-    return Padding(
-      padding: EdgeInsets.only(left: 10, right: 10, top: 5),
-      child: Container(
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            button,
-            Align(
-              alignment: Alignment.centerLeft,
-              child: icon,
-            ),
-            Padding(
-              padding: EdgeInsets.only(left: _itemSize + 20),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: title,
-                  ),
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: lastEdit,
-                  ),
-                ],
-              ),
-            ),
-            Align(
-              alignment: Alignment.centerRight,
-              child: moreButton,
-            ),
-            Align(
-              alignment: Alignment.bottomCenter,
-              child: Container(
-                height: 2,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
+    ).align(Alignment.centerRight));
+
+    return Stack(
+      fit: StackFit.expand,
+      children: children,
     );
   }
 
@@ -251,30 +259,34 @@ class _HomePageState extends State<HomePage> {
       unselectedItemColor: Colors.grey[600],
       onTap: (index) => setState(() {
         _selectedIndex = index;
+        searchDomain = widget.files.getFiles(FileListType.values[_selectedIndex]);
       }),
     );
   }
 
   void _searchFile({String searchTerm}) {
+    setState(() {
+      searchDomain = widget.files.getFiles(FileListType.values[_selectedIndex]);
+    });
     if (searchTerm == null) {
       searchTerm = _searchController.text;
+      return;
     }
     debugPrint("Searching");
-    searchDomain = [];
-    for (int i = 0; i < widget.files.data.allInLocalMachine.length; i++) {
-      if (widget.files.data.allInLocalMachine[i].title.contains(searchTerm)) {
-        searchDomain.add(widget.files.data.allInLocalMachine[i]);
+    List<MindMapModel> tempDomain = [];
+    for (int i = 0; i < searchDomain.length; i++) {
+      if (searchDomain[i].title.contains(searchTerm)) {
+        tempDomain.add(searchDomain[i]);
       }
     }
 
     // TODO make the list display 'no files found' text or something
-    if (searchDomain.isEmpty) {
+    if (tempDomain.isEmpty) {
       debugPrint("Nothing found");
     }
 
-    setState(() {
-      searchDomain.sort((a, b) => a.title.compareTo(b.title));
-    });
+    tempDomain.sort((a, b) => a.title.compareTo(b.title));
+    searchDomain = tempDomain;
   }
 
   void _openMindMap() => Navigator.push(context, MaterialPageRoute(builder: (context) => MindMapEditorPage()));

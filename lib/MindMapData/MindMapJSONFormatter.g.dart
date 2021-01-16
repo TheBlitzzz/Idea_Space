@@ -8,25 +8,13 @@ part of mind_map_data;
 
 FileIndexModel _$FileIndexModelFromJson(Map<String, dynamic> json) {
   return FileIndexModel()
-    ..allInLocalMachine = (json['allInLocalMachine'] as List)
-        ?.map((e) => e == null ? null : MindMapModel.fromJson(e as Map<String, dynamic>))
-        ?.toList()
-    ..recentFiles = (json['recentFiles'] as List)
-        ?.map((e) => e == null ? null : MindMapModel.fromJson(e as Map<String, dynamic>))
-        ?.toList()
-    ..favouriteFiles = (json['favouriteFiles'] as List)
-        ?.map((e) => e == null ? null : MindMapModel.fromJson(e as Map<String, dynamic>))
-        ?.toList()
-    ..sharedFiles = (json['sharedFiles'] as List)
+    ..allFiles = (json['allFiles'] as List)
         ?.map((e) => e == null ? null : MindMapModel.fromJson(e as Map<String, dynamic>))
         ?.toList();
 }
 
 Map<String, dynamic> _$FileIndexModelToJson(FileIndexModel instance) => <String, dynamic>{
-      'allInLocalMachine': instance.allInLocalMachine,
-      'recentFiles': instance.recentFiles,
-      'favouriteFiles': instance.favouriteFiles,
-      'sharedFiles': instance.sharedFiles,
+      'allFiles': instance.allFiles,
     };
 
 MindMapModel _$MindMapModelFromJson(Map<String, dynamic> json) {
@@ -34,6 +22,7 @@ MindMapModel _$MindMapModelFromJson(Map<String, dynamic> json) {
     json['filePath'] as String,
     json['title'] as String,
     json['lastEditTime'] == null ? null : DateTime.parse(json['lastEditTime'] as String),
+    isBookMarked: json['isBookMarked'] as bool,
   );
 }
 
@@ -41,6 +30,7 @@ Map<String, dynamic> _$MindMapModelToJson(MindMapModel instance) => <String, dyn
       'filePath': instance.filePath,
       'title': instance.title,
       'lastEditTime': instance.lastEditTime?.toIso8601String(),
+      'isBookMarked': instance.isBookMarked,
     };
 
 NodeModel _$NodeModelFromJson(Map<String, dynamic> json) {
