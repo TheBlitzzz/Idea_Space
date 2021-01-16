@@ -1,6 +1,6 @@
 part of homepage;
 
-class ExpandableBoxWidget extends StatefulWidget {
+class ExpandableBox extends StatefulWidget {
   final double fieldHeight;
   final List<Widget> children;
   final String title;
@@ -8,13 +8,13 @@ class ExpandableBoxWidget extends StatefulWidget {
 
   int get fieldCount => children.length + 1;
 
-  ExpandableBoxWidget(this.fieldHeight, this.children, this.title, {this.childAlignment = CrossAxisAlignment.start});
+  ExpandableBox(this.fieldHeight, this.children, this.title, {this.childAlignment = CrossAxisAlignment.start});
 
   @override
-  _ExpandableBoxWidgetState createState() => _ExpandableBoxWidgetState();
+  _ExpandableBoxState createState() => _ExpandableBoxState();
 }
 
-class _ExpandableBoxWidgetState extends State<ExpandableBoxWidget> with TickerProviderStateMixin {
+class _ExpandableBoxState extends State<ExpandableBox> with TickerProviderStateMixin {
   static const double padding = 10;
   static const int animDurationMilliseconds = 250;
 

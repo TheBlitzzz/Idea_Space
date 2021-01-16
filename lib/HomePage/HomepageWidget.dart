@@ -10,7 +10,6 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  static const double _itemSize = 60, _borderRadius = 20;
   final TextEditingController _searchController = TextEditingController();
   int _selectedIndex = 0;
   List<MindMapModel> searchDomain;
@@ -96,10 +95,10 @@ class _HomePageState extends State<HomePage> {
             duration: const Duration(milliseconds: 500),
             decoration: BoxDecoration(color: Colors.blue),
           ).wrapSized(height: 150),
-          ExpandableBoxWidget(24, [], "Account"),
-          ExpandableBoxWidget(24, [], "Theme colour"),
-          ExpandableBoxWidget(24, [], "Notification settings"),
-          ExpandableBoxWidget(24, aboutWidgets, "About"),
+          ExpandableBox(24, [], "Account"),
+          ExpandableBox(24, [], "Theme colour"),
+          ExpandableBox(24, [], "Notification settings"),
+          ExpandableBox(24, aboutWidgets, "About"),
         ],
       ),
     );
@@ -117,33 +116,13 @@ class _HomePageState extends State<HomePage> {
     //     Text("User's Space", style: TextStyle(fontSize: 20)),
     //   ],
     // )..align(Alignment.centerLeft);
-    Widget searchField = TextField(
-      controller: _searchController,
-      decoration: InputDecoration(
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(_borderRadius)),
-        hintStyle: TextStyle(color: Colors.grey[500]),
-        hintText: "Search",
-        contentPadding: EdgeInsets.all(10),
-        prefixIcon: IconButton(
-          icon: Icon(Icons.search),
-          onPressed: () => _searchFile(),
-        ),
-        suffixIcon: IconButton(
-          icon: Icon(Icons.clear),
-          onPressed: () {
-            _searchController.text = "";
-            _searchFile();
-          },
-        ),
-      ),
-      onChanged: (searchTerm) => _searchFile(searchTerm: searchTerm),
-    );
+
     return Column(
       children: [
         // SizedBox(height: _appBarOffset),
         // titleRow,
         SizedBox(height: 10),
-        searchField,
+        SearchField(_searchController, _searchFile),
       ],
     ).pad(10, 10, 10, 10);
   }
@@ -199,7 +178,7 @@ class _HomePageState extends State<HomePage> {
           padding: EdgeInsets.only(left: 10, right: 10),
           itemBuilder: _createDocumentItem,
           itemCount: searchDomain.length,
-          itemExtent: _itemSize + 20,
+          itemExtent: _documentItemSize + 20,
         ),
       ),
     );
@@ -212,7 +191,7 @@ class _HomePageState extends State<HomePage> {
     // File Icon
     children.add(Icon(
       Icons.menu_book,
-      size: _itemSize * 0.8,
+      size: _documentItemSize * 0.8,
     ).align(Alignment.centerLeft));
 
     // Title and last edit
@@ -223,7 +202,7 @@ class _HomePageState extends State<HomePage> {
         SizedBox(height: 5),
         Text(data.getLastEditTime, style: TextStyle(fontSize: 11)).align(Alignment.centerLeft),
       ],
-    ).pad(_itemSize, 0, 0, 0));
+    ).pad(_documentItemSize, 0, 0, 0));
 
     // bottom divider
     children.add(Container(

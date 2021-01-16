@@ -12,3 +12,8 @@ import 'package:idea_space/zExtensions/WidgetTransforms.dart';
 part 'HomepageWidget.dart';
 
 part 'ExpandableBoxWidget.dart';
+
+part 'SearchFieldWidget.dart';
+
+const double _documentItemSize = 60;
+const double _borderRadius = 20;
