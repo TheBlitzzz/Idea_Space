@@ -16,13 +16,14 @@ extension WidgetTransforms on Widget {
   }
 
   /// Wraps the widget with a Positioned widget.
-  Widget wrapPositioned(double dx, double dy) => Positioned(top: dy, left: dx, child: this);
+  Widget wrapPositioned({double dx, double dy, double width, double height}) =>
+      Positioned(top: dy, left: dx, width: width, height: height, child: this);
 
   /// Wraps the widget with a Positioned widget.
-  Widget setPosition(Offset offset) => this.wrapPositioned(offset.dx, offset.dy);
+  Widget setPosition(Offset offset) => this.wrapPositioned(dx: offset.dx, dy: offset.dy);
 
   /// Wraps the widget with a SizedBox widget.
-  Widget wrapSized(double width, double height) => SizedBox(width: width, height: height, child: this);
+  Widget wrapSized({double width, double height}) => SizedBox(width: width, height: height, child: this);
 
   /// Wraps the widget with a SizedBox widget.
   Widget setSize(Size size) => SizedBox(width: size.width, height: size.height, child: this);

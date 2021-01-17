@@ -15,9 +15,9 @@ class FileIndexer {
       case FileListType.Recent:
         return recentFiles;
       case FileListType.Favourites:
-        debugPrint(favouriteFiles.length.toString());
         return favouriteFiles;
       default:
+        data.allFiles.sort((a, b) => a.title.compareTo(b.title));
         return data.allFiles;
     }
   }
@@ -61,13 +61,19 @@ class FileIndexer {
     var allFiles = [];
     allFiles.addAll(data.allFiles);
     allFiles.sort((a, b) => a.lastEditTime.compareTo(b.lastEditTime));
+
     recentFiles = [];
     favouriteFiles = [];
-    for (int i = 0; i < allFiles.length; i++) {
+    int counter = 0;
+    for (int i = allFiles.length - 1; i >= 0; i--) {
       var fileData = allFiles[i];
-      if (i < 10) recentFiles.add(fileData);
+      if (counter < 10) recentFiles.add(fileData);
       if (fileData.isBookMarked) favouriteFiles.add(fileData);
+      counter++;
     }
+
+    data.allFiles.sort((a, b) => a.title.compareTo(b.title));
+    favouriteFiles.sort((a, b) => a.title.compareTo(b.title));
   }
 
   void addNewFile(MindMapModel model) {
@@ -76,8 +82,8 @@ class FileIndexer {
     writeToFile();
   }
 
-  void updateFile(int index, MindMapModel model) {
-    data.allFiles[index] = model;
+  void updateFileLastEdit(int index) {
+    data.allFiles[index].updateLastEdit();
     _updateFileLists();
     writeToFile();
   }

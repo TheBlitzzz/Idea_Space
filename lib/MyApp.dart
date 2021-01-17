@@ -12,7 +12,9 @@ class MyApp extends StatelessWidget {
     ThemeData theme = ThemeData(
       primarySwatch: Colors.grey,
       brightness: Brightness.dark,
-      textSelectionColor: Colors.grey,
+      textSelectionTheme: TextSelectionThemeData(
+        selectionColor: Colors.grey,
+      ),
     );
 
     return MaterialApp(
