@@ -5,10 +5,27 @@ class NodeEditorContent extends StatefulWidget {
   _NodeEditorContentState createState() => _NodeEditorContentState();
 }
 
-class _NodeEditorContentState extends State<NodeEditorContent> {
+class _NodeEditorContentState extends State<NodeEditorContent> with TickerProviderStateMixin {
   final List<TextEditingController> noteDescription = [];
   final controller = TextEditingController();
   FocusNode textSecondFocusNode = new FocusNode();
+  AnimationController _controller;
+  var inputText = "";
+
+  double width = 0;
+  double height = 60;
+
+  double _openMenu() {
+    setState(() {
+      width = 150;
+    });
+  }
+
+  double _closeMenu() {
+    setState(() {
+      width = 0;
+    });
+  }
 
   @override
   void dispose() {
@@ -19,16 +36,19 @@ class _NodeEditorContentState extends State<NodeEditorContent> {
   }
 
   List<Widget> textBlock = <Widget>[];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(backgroundColor: Color(0xff1B1B2F), title: Text("Node-1"), actions: <Widget>[
-        IconButton(
-          icon: Icon(Icons.menu),
-          iconSize: 25,
-          onPressed: () {},
-        ),
-      ]),
+      appBar: AppBar(backgroundColor: Color(0xff1B1B2F),
+          title: Text("Node-1"),
+          actions: <Widget>[
+            IconButton(
+              icon: Icon(Icons.menu),
+              iconSize: 25,
+              onPressed: () {},
+            ),
+          ]),
       // bottomNavigationBar: BottomAppBar(
       //     shape: AutomaticNotchedShape(
       //       RoundedRectangleBorder(
@@ -93,12 +113,100 @@ class _NodeEditorContentState extends State<NodeEditorContent> {
               ),
             ),
             Expanded(
-              child: ReorderableListView(
-                children: textBlock,
-                onReorder: (int oldIndex, int newIndex) {
-                  var temp = noteDescription[oldIndex];
-                  noteDescription[oldIndex] = noteDescription[newIndex];
-                  noteDescription[newIndex] = temp;
+              child: ListView.builder(
+                padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
+                itemCount: noteDescription.length,
+                itemBuilder: (context, int i) {
+                  final f = noteDescription[i];
+                  final inputController = f;
+                  return Dismissible(
+                    direction: DismissDirection.endToStart,
+                    key: ValueKey(noteDescription[i]),
+                    background: Container(
+                      alignment: AlignmentDirectional.centerEnd,
+                      color: Colors.red,
+                      child: Padding(
+                        padding: EdgeInsets.fromLTRB(0.0, 0.0, 10.0, 0.0),
+                        child: Icon(Icons.delete,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                    onDismissed: (direction) {
+                      setState(() {
+                        noteDescription.removeAt(i);
+                      });
+                    },
+                    child: Row(
+                        children: <Widget>[
+                          Expanded(
+                            child: TextFormField(
+                              onChanged: (value){
+                                setState(() {
+                                });
+                              },
+                              maxLines: null,
+                              controller: inputController,
+                              decoration: InputDecoration(
+                                filled: true,
+                                suffixIcon: hidingIcon(inputController),
+                                focusedBorder: OutlineInputBorder(
+                                  borderSide: BorderSide(
+                                    color: Colors.blue,
+                                    width: 2,
+                                  ),
+                                  borderRadius: const BorderRadius.all(
+                                    const Radius.circular(10.0),
+                                  ),
+                                ),
+                                contentPadding: EdgeInsets.fromLTRB(
+                                    20, 20, 20, 20),
+                                hintText: "Write your description here",
+                                hintStyle: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                // border: OutlineInputBorder(
+                                //   borderRadius: const BorderRadius.all(
+                                //     const Radius.circular(10.0),
+                                //   ),
+                                // ),
+                              ),
+                            ),
+                          ),
+                          // AnimatedContainer(
+                          //   duration: Duration(milliseconds: 300),
+                          //   width: width,
+                          //   height: height,
+                          //   decoration: BoxDecoration(
+                          //     color: Color(0xFFFFFFF),
+                          //     borderRadius: BorderRadius.circular(10.0),
+                          //   ),
+                          //   child: Row(
+                          //       children: <Widget>[
+                          //         IconButton(
+                          //           icon: Icon(
+                          //             Icons.arrow_drop_up_outlined,
+                          //             color: Colors.black,
+                          //           ),
+                          //         ),
+                          //         IconButton(
+                          //           icon: Icon(
+                          //             Icons.arrow_drop_down_outlined,
+                          //             color: Colors.black,
+                          //           ),
+                          //         ),
+                          //         IconButton(
+                          //           icon: Icon(
+                          //             Icons.delete,
+                          //             color: Colors.red,
+                          //            ),
+                          //         ),
+                          //       ]
+                          //   ),
+                          // ),
+                        ]
+                    ),
+                  );
                 },
               ),
             ),
@@ -163,4 +271,22 @@ class _NodeEditorContentState extends State<NodeEditorContent> {
       ),
     );
   }
+  Widget hidingIcon(TextEditingController) {
+    if (TextEditingController.text!="") {
+      return IconButton(
+          icon: Icon(
+            Icons.clear,
+          ),
+          splashColor: Colors.redAccent,
+          onPressed: () {
+              setState((){
+                TextEditingController.clear();
+                // hidingIcon(TextEditingController);
+              });
+          });
+    } else {
+      return null;
+    }
+  }
 }
+
