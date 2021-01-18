@@ -1,24 +1,24 @@
-part of mind_map_data;
+part of data_io;
 
-class FileIndexer {
+class MindMapManager {
   static const String _fileIndexerPath = "Index.txt";
 
-  FileIndexModel data;
+  MindMapListModel data;
 
-  List<MindMapModel> recentFiles;
-  List<MindMapModel> favouriteFiles;
+  List<MindMapModel> recentMindMaps;
+  List<MindMapModel> favouriteMindMaps;
 
-  List<MindMapModel> getFiles(FileListType listType) {
-    switch (listType) {
-      case FileListType.All:
-        return data.allFiles;
-      case FileListType.Recent:
-        return recentFiles;
-      case FileListType.Favourites:
-        return favouriteFiles;
+  List<MindMapModel> getFiles(MindMapType mindMapType) {
+    switch (mindMapType) {
+      case MindMapType.All:
+        return data.allMindMaps;
+      case MindMapType.Recent:
+        return recentMindMaps;
+      case MindMapType.Favourites:
+        return favouriteMindMaps;
       default:
-        data.allFiles.sort((a, b) => a.title.compareTo(b.title));
-        return data.allFiles;
+        data.allMindMaps.sort((a, b) => a.title.compareTo(b.title));
+        return data.allMindMaps;
     }
   }
 
@@ -38,15 +38,15 @@ class FileIndexer {
     return null;
   }
 
-  Future<FileIndexModel> get readFileIndex async {
+  Future<MindMapListModel> get readFileIndex async {
     var file = await _getJSONFile;
     if (file == null) {
-      data = FileIndexModel();
+      data = MindMapListModel();
       file = await writeToFile();
     }
     final contents = await file.readAsString();
     Map fileMap = jsonDecode(contents);
-    data = FileIndexModel.fromJson(fileMap);
+    data = MindMapListModel.fromJson(fileMap);
     _updateFileLists();
 
     return data;
@@ -59,37 +59,37 @@ class FileIndexer {
 
   void _updateFileLists() {
     var allFiles = [];
-    allFiles.addAll(data.allFiles);
+    allFiles.addAll(data.allMindMaps);
     allFiles.sort((a, b) => a.lastEditTime.compareTo(b.lastEditTime));
 
-    recentFiles = [];
-    favouriteFiles = [];
+    recentMindMaps = [];
+    favouriteMindMaps = [];
     int counter = 0;
     for (int i = allFiles.length - 1; i >= 0; i--) {
       var fileData = allFiles[i];
-      if (counter < 10) recentFiles.add(fileData);
-      if (fileData.isBookMarked) favouriteFiles.add(fileData);
+      if (counter < 10) recentMindMaps.add(fileData);
+      if (fileData.isBookMarked) favouriteMindMaps.add(fileData);
       counter++;
     }
 
-    data.allFiles.sort((a, b) => a.title.compareTo(b.title));
-    favouriteFiles.sort((a, b) => a.title.compareTo(b.title));
+    data.allMindMaps.sort((a, b) => a.title.compareTo(b.title));
+    favouriteMindMaps.sort((a, b) => a.title.compareTo(b.title));
   }
 
   void addNewFile(MindMapModel model) {
-    data.allFiles.add(model);
+    data.allMindMaps.add(model);
     _updateFileLists();
     writeToFile();
   }
 
   void updateFileLastEdit(int index) {
-    data.allFiles[index].updateLastEdit();
+    data.allMindMaps[index].updateLastEdit();
     _updateFileLists();
     writeToFile();
   }
 
   void deleteFileAt(int index) {
-    data.allFiles.removeAt(index);
+    data.allMindMaps.removeAt(index);
     _updateFileLists();
     writeToFile();
   }

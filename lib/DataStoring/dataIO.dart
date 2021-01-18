@@ -1,4 +1,4 @@
-library mind_map_data;
+library data_io;
 
 import 'dart:convert';
 import 'dart:async';
@@ -8,14 +8,14 @@ import 'package:json_annotation/json_annotation.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
-part 'FileIndexer.dart';
+part 'MindMapManager.dart';
 
-part 'FileIndexModel.dart';
+part 'MindMapListModel.dart';
 
 part 'MindMapModel.dart';
 
 part 'NodeModel.dart';
 
-part 'FileListType.dart';
+part 'MindMapType.dart';
 
-part 'DataStoring.g.dart';
+part 'DataIO.g.dart';

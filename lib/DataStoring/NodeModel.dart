@@ -1,4 +1,4 @@
-part of mind_map_data;
+part of data_io;
 
 @JsonSerializable()
 class NodeModel {

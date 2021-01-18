@@ -1,7 +1,7 @@
 part of homepage;
 
 class HomePage extends StatefulWidget {
-  final FileIndexer files;
+  final MindMapManager files;
 
   HomePage(this.files);
 
@@ -114,14 +114,14 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _createCenterList() {
-    Widget builder = FutureBuilder<FileIndexModel>(
+    Widget builder = FutureBuilder<MindMapListModel>(
       future: widget.files.readFileIndex,
       builder: (context, snapShot) {
         if (searchDomain != null) {
           return _createDocumentList();
         }
         if (snapShot.hasData) {
-          searchDomain = snapShot.data.allFiles;
+          searchDomain = snapShot.data.allMindMaps;
           return _createDocumentList();
         } else {
           return Center(
@@ -250,14 +250,14 @@ class _HomePageState extends State<HomePage> {
       onTap: (index) => setState(() {
         if (index == 3) return;
         _selectedIndex = index;
-        searchDomain = widget.files.getFiles(FileListType.values[_selectedIndex]);
+        searchDomain = widget.files.getFiles(MindMapType.values[_selectedIndex]);
       }),
     );
   }
 
   void _searchFile({String searchTerm}) {
     setState(() {
-      searchDomain = widget.files.getFiles(FileListType.values[_selectedIndex]);
+      searchDomain = widget.files.getFiles(MindMapType.values[_selectedIndex]);
     });
     if (searchTerm == null) {
       searchTerm = _searchController.text;
