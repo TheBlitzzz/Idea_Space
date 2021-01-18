@@ -1,5 +1,145 @@
 part of login;
 
+class Login extends StatefulWidget {
+  @override
+  _LoginState createState() => _LoginState();
+}
+
+class _LoginState extends State<Login> {
+  static const Duration _animDuration = Duration(milliseconds: 250);
+  static const double _fieldHeight = 50;
+
+  final TextEditingController _usernameController = new TextEditingController();
+  final TextEditingController _passwordController = new TextEditingController();
+  final TextEditingController _confirmPasswordController = new TextEditingController();
+
+  bool isSignUp = false;
+  bool showPassword = false;
+
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    super.dispose();
+    _usernameController.dispose();
+    _passwordController.dispose();
+    _confirmPasswordController.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    var defaultSpacing = SizedBox(height: 20);
+
+    return Scaffold(
+      backgroundColor: Color.fromRGBO(22, 36, 71, 10),
+      body: Center(
+        child: SingleChildScrollView(
+          padding: EdgeInsets.all(40.0),
+          child: Column(
+            children: [
+              _createLogo(),
+              defaultSpacing,
+              _createField(_usernameController, Icons.account_circle_rounded, "Username", "Johnny123"),
+              defaultSpacing,
+              _createPasswordField(_passwordController, Icons.lock, "Password", "*****"),
+              defaultSpacing,
+              AnimatedContainer(
+                duration: _animDuration,
+                height: isSignUp ? _fieldHeight : 0,
+                child: isSignUp
+                    ? _createPasswordField(_confirmPasswordController, Icons.lock, "Confirm Password", "*****")
+                    : null,
+              ),
+              AnimatedContainer(
+                duration: _animDuration,
+                height: isSignUp ? 20 : 0,
+              ),
+              Container(
+                padding: EdgeInsets.only(left: 30, right: 30),
+                width: double.infinity,
+                height: _fieldHeight * 0.8,
+                child: ElevatedButton(
+                  style: ButtonStyle(
+                    shape: MaterialStateProperty.all(RoundedRectangleBorder(borderRadius: BorderRadius.circular(18))),
+                    backgroundColor: MaterialStateProperty.all(Color.fromRGBO(104, 127, 154, 10)),
+                  ),
+                  child: Text("Login",
+                      style: TextStyle(
+                        color: Colors.white,
+                        // fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      )),
+                  onPressed: () =>
+                      Navigator.of(context).push(MaterialPageRoute(builder: (context) => HomePage(FileIndexer()))),
+                ),
+              ),
+              TextButton(
+                onPressed: () => setState(() => isSignUp = !isSignUp),
+                child: Text(
+                  "Sign Up",
+                  style: TextStyle(fontSize: 14, color: Colors.blue[600], decoration: TextDecoration.underline),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _createLogo() => Image.asset("assets/Ideaspacelogo.png");
+
+  Widget _createField(TextEditingController controller, IconData prefixIcon, String label, String hint,
+      {Widget suffix, bool obscureText = false}) {
+    var textField = TextField(
+      controller: controller,
+      decoration: InputDecoration(
+        prefixIcon: Icon(prefixIcon),
+        suffix: suffix,
+        labelText: label,
+        hintText: hint,
+        border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(20))),
+      ),
+      obscureText: obscureText,
+    );
+    return Container(height: _fieldHeight, child: textField);
+  }
+
+  Widget _createPasswordField(TextEditingController controller, IconData prefixIcon, String label, String hint) {
+    final Widget visibilityToggle = IconButton(
+      icon: Icon(showPassword ? Icons.visibility_outlined : Icons.visibility_off_outlined),
+      onPressed: () => setState(() => showPassword = !showPassword),
+    );
+
+    return _createField(controller, prefixIcon, label, hint, suffix: visibilityToggle, obscureText: !showPassword);
+  }
+}
+
+// Row(
+// mainAxisAlignment: MainAxisAlignment.center,
+// children: [
+// TextButton(
+// child: Text(
+// "Sign Up",
+// style: TextStyle(
+// fontSize: 14,
+// color: Colors.blue[600],
+// decoration: TextDecoration.underline,
+// ),
+// ),
+// onPressed: () => setState(() => isSignUp = !isSignUp),
+// ),
+// TextButton(
+// child: Text(
+// "Forgot Password?",
+// style: TextStyle(
+// fontSize: 14,
+// color: Colors.blue[600],
+// decoration: TextDecoration.underline,
+// ),
+// ),
+// ),
+// ],
+// )
 //version 1
 // class LoginPage extends StatefulWidget {
 //   @override
@@ -214,104 +354,3 @@ part of login;
 //     );
 //   }
 // }
-
-class Login extends StatefulWidget {
-  @override
-  _LoginState createState() => _LoginState();
-}
-
-class _LoginState extends State<Login> {
-  TextEditingController usernameController;
-  TextEditingController passwordController;
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-        backgroundColor: Color.fromRGBO(22, 36, 71, 10),
-        body: Center(
-          child: SingleChildScrollView(
-              padding: EdgeInsets.all(40.0),
-              child: Column(children: [
-                Image.asset("assets/Ideaspacelogo.png"),
-                SizedBox(height: 50),
-                TextField(
-                  controller: usernameController,
-                  decoration: InputDecoration(
-                      prefixIcon: Icon(Icons.account_circle_rounded),
-                      labelText: "Username",
-                      hintText: "Johnny123",
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.all(Radius.circular(20)),
-                      )),
-                ),
-                SizedBox(height: 20),
-                TextField(
-                  controller: passwordController,
-                  decoration: InputDecoration(
-                      prefixIcon: Icon(Icons.lock),
-                      suffixIcon: IconButton(
-                        icon: Icon(Icons.visibility),
-                        onPressed: () {},
-                      ),
-                      labelText: "Password",
-                      hintText: "***********",
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.all(Radius.circular(20)),
-                      )),
-                ),
-                SizedBox(height: 20),
-                Transform.scale(
-                  scale: 0.8,
-                  child: Container(
-                    width: double.infinity,
-                    height: 50,
-                    child: ElevatedButton(
-                      style: ButtonStyle(
-                        shape: MaterialStateProperty.all(
-                          RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(18),
-                          ),
-                        ),
-                        backgroundColor: MaterialStateProperty.all(Color.fromRGBO(104, 127, 154, 10)),
-                      ),
-                      child: Text("Login",
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 20,
-                          )),
-                      onPressed: () {
-                        Navigator.of(context).push(MaterialPageRoute(builder: (context) => HomePage(FileIndexer())));
-                      },
-                    ),
-                  ),
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    TextButton(
-                      child: Text(
-                        "Sign Up",
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.blue[600],
-                          decoration: TextDecoration.underline,
-                        ),
-                      ),
-                    ),
-                    TextButton(
-                      child: Text(
-                        "Forgot Password?",
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.blue[600],
-                          decoration: TextDecoration.underline,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ])),
-        ));
-  }
-}

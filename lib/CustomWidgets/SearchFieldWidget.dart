@@ -1,8 +1,8 @@
-part of homepage;
+part of custom_widgets;
 
 class SearchField extends StatelessWidget {
   final TextEditingController _controller;
-  void Function({String searchTerm}) _searchFile;
+  final void Function({String searchTerm}) _searchFile;
 
   String get getText => _controller.text;
 

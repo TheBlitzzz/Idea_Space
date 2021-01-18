@@ -105,22 +105,8 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _createSearchBar() {
-    // Widget titleRow = Row(
-    //   mainAxisAlignment: MainAxisAlignment.start,
-    //   children: [
-    //     IconButton(
-    //       iconSize: 24,
-    //       icon: Icon(Icons.menu),
-    //       onPressed: () {},
-    //     ),
-    //     Text("User's Space", style: TextStyle(fontSize: 20)),
-    //   ],
-    // )..align(Alignment.centerLeft);
-
     return Column(
       children: [
-        // SizedBox(height: _appBarOffset),
-        // titleRow,
         SizedBox(height: 10),
         SearchField(_searchController, _searchFile),
       ],
@@ -205,25 +191,28 @@ class _HomePageState extends State<HomePage> {
     ).pad(_documentItemSize, 0, 0, 0));
 
     // bottom divider
-    children.add(Container(
-      height: 2,
-      decoration: BoxDecoration(
-        color: Colors.white,
-      ),
-    ).align(Alignment.bottomCenter));
-
+    children.add(Container(height: 2, color: Colors.white).align(Alignment.bottomCenter));
     // button to open the file
-    children.add(InkWell(
-      onTap: () => _openMindMap(),
-    ));
+    children.add(InkWell(onTap: () => _openMindMap()));
 
-    // more button
-    children.add(IconButton(
-      icon: Icon(Icons.more_horiz),
-      onPressed: () {
-        debugPrint("More Options");
-      },
-    ).align(Alignment.centerRight));
+    var row = Row(
+      mainAxisAlignment: MainAxisAlignment.end,
+      children: [
+        IconButton(
+          icon: Icon(Icons.bookmark, color: data.isBookMarked ? Colors.amber : Colors.white),
+          onPressed: () {
+            debugPrint("More Options");
+          },
+        ),
+        IconButton(
+          icon: Icon(Icons.delete, color: Colors.red),
+          onPressed: () {
+            debugPrint("Delete");
+          },
+        ),
+      ],
+    );
+    children.add(row);
 
     return Stack(
       fit: StackFit.expand,
