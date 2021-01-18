@@ -1,7 +1,7 @@
 part of io_handler;
 
 class MindMapManager {
-  static const String _fileIndexerPath = "Index.txt";
+  static const String _mindMapIndexPath = "Index.txt";
 
   MindMapListModel data;
 
@@ -22,20 +22,18 @@ class MindMapManager {
     }
   }
 
-  Future<MindMapListModel> get readFileIndex async {
-    var contents = await readFileAsString([_fileIndexerPath]);
+  Future<List<MindMapModel>> readFromFile() async {
+    var contents = await readFileAsString([_mindMapIndexPath]);
     if (contents == null) {
       data = MindMapListModel();
-      return data;
+    } else {
+      data = MindMapListModel.fromJson(jsonDecode(contents));
     }
-
-    data = MindMapListModel.fromJson(jsonDecode(contents));
     _updateFileLists();
-
-    return data;
+    return data.allMindMaps;
   }
 
-  void save() => writeFile(jsonEncode(data), [_fileIndexerPath]);
+  void save() => writeFile(jsonEncode(data), [_mindMapIndexPath]);
 
   void _updateFileLists() {
     var allFiles = [];
@@ -56,8 +54,20 @@ class MindMapManager {
     favouriteMindMaps.sort((a, b) => a.title.compareTo(b.title));
   }
 
-  void addNewFile(MindMapModel model) {
+  void addNewMindMap(MindMapModel model) {
     data.allMindMaps.add(model);
+    _updateFileLists();
+    save();
+  }
+
+  void toggleBookmark(int index) {
+    data.allMindMaps[index].toggleBookmark();
+    _updateFileLists();
+    save();
+  }
+
+  void renameMindMap(int index, String newTitle) {
+    data.allMindMaps[index].rename(newTitle);
     _updateFileLists();
     save();
   }
@@ -68,9 +78,22 @@ class MindMapManager {
     save();
   }
 
-  void deleteFileAt(int index) {
+  void deleteMindMapAt(int index) {
     data.allMindMaps.removeAt(index);
     _updateFileLists();
     save();
   }
+}
+
+@JsonSerializable()
+class MindMapListModel {
+  List<MindMapModel> allMindMaps;
+
+  MindMapListModel() {
+    allMindMaps = [];
+  }
+
+  factory MindMapListModel.fromJson(Map<String, dynamic> json) => _$MindMapListModelFromJson(json);
+
+  Map<String, dynamic> toJson() => _$MindMapListModelToJson(this);
 }

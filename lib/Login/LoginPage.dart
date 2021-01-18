@@ -1,24 +1,41 @@
 part of login;
 
 class Login extends StatefulWidget {
+  final UserManager manager;
+
+  Login(this.manager);
+
   @override
   _LoginState createState() => _LoginState();
 }
 
 class _LoginState extends State<Login> {
   static const Duration _animDuration = Duration(milliseconds: 250);
-  static const double _fieldHeight = 50;
+  static const double _fieldHeight = 60;
 
   final TextEditingController _usernameController = new TextEditingController();
   final TextEditingController _passwordController = new TextEditingController();
   final TextEditingController _confirmPasswordController = new TextEditingController();
+
+  String get _username {
+    return _usernameController.text.trim();
+  }
+
+  String get _password {
+    return _passwordController.text.trim();
+  }
+
+  String get _confirmPassword {
+    return _confirmPasswordController.text.trim();
+  }
+
+  List<UserModel> allUsers;
 
   bool isSignUp = false;
   bool showPassword = false;
 
   @override
   void dispose() {
-    // TODO: implement dispose
     super.dispose();
     _usernameController.dispose();
     _passwordController.dispose();
@@ -28,64 +45,69 @@ class _LoginState extends State<Login> {
   @override
   Widget build(BuildContext context) {
     var defaultSpacing = SizedBox(height: 20);
-
-    return Scaffold(
-      backgroundColor: Color.fromRGBO(22, 36, 71, 10),
-      body: Center(
-        child: SingleChildScrollView(
-          padding: EdgeInsets.all(40.0),
-          child: Column(
-            children: [
-              _createLogo(),
-              defaultSpacing,
-              _createField(_usernameController, Icons.account_circle_rounded, "Username", "Johnny123"),
-              defaultSpacing,
-              _createPasswordField(_passwordController, Icons.lock, "Password", "*****"),
-              defaultSpacing,
-              AnimatedContainer(
-                duration: _animDuration,
-                height: isSignUp ? _fieldHeight : 0,
-                child: isSignUp
-                    ? _createPasswordField(_confirmPasswordController, Icons.lock, "Confirm Password", "*****")
-                    : null,
-              ),
-              AnimatedContainer(
-                duration: _animDuration,
-                height: isSignUp ? 20 : 0,
-              ),
-              Container(
-                padding: EdgeInsets.only(left: 30, right: 30),
-                width: double.infinity,
-                height: _fieldHeight * 0.8,
-                child: ElevatedButton(
-                  style: ButtonStyle(
-                    shape: MaterialStateProperty.all(RoundedRectangleBorder(borderRadius: BorderRadius.circular(18))),
-                    backgroundColor: MaterialStateProperty.all(Color.fromRGBO(104, 127, 154, 10)),
-                  ),
-                  child: Text("Login",
-                      style: TextStyle(
-                        color: Colors.white,
-                        // fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      )),
-                  onPressed: () =>
-                      Navigator.of(context).push(MaterialPageRoute(builder: (context) => HomePage(MindMapManager()))),
-                ),
-              ),
-              TextButton(
-                onPressed: () => setState(() => isSignUp = !isSignUp),
-                child: Text(
-                  "Sign Up",
-                  style: TextStyle(fontSize: 14, color: Colors.blue[600], decoration: TextDecoration.underline),
-                ),
-              ),
-            ],
-          ),
+    var mainBody = Center(
+      child: SingleChildScrollView(
+        padding: EdgeInsets.all(40.0),
+        child: Column(
+          children: [
+            _createLogo(),
+            defaultSpacing,
+            _createField(_usernameController, Icons.account_circle_rounded, "Username", "Johnny123"),
+            defaultSpacing,
+            _createPasswordField(_passwordController, Icons.lock, "Password", "*****"),
+            defaultSpacing,
+            AnimatedContainer(
+              duration: _animDuration,
+              height: isSignUp ? _fieldHeight : 0,
+              child: isSignUp
+                  ? _createPasswordField(_confirmPasswordController, Icons.lock, "Confirm Password", "*****")
+                  : null,
+            ),
+            AnimatedContainer(
+              duration: _animDuration,
+              height: isSignUp ? 20 : 0,
+            ),
+            _createLoginButton(context),
+            _createSignUpButton(),
+          ],
         ),
       ),
     );
+    var loadingScreen = Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: <Widget>[
+          SizedBox(
+            child: CircularProgressIndicator(),
+            width: 60,
+            height: 60,
+          ),
+          const Padding(
+            padding: EdgeInsets.only(top: 16),
+            child: Text('Loading...'),
+          )
+        ],
+      ),
+    );
+    var futureMainBody = FutureBuilder<List<UserModel>>(
+      future: widget.manager.readFromFile(),
+      builder: (context, snapShot) {
+        if (snapShot.hasData) {
+          return mainBody;
+        } else {
+          return loadingScreen;
+        }
+      },
+    );
+
+    return Scaffold(
+      backgroundColor: Color.fromRGBO(22, 36, 71, 10),
+      body: allUsers == null ? futureMainBody : mainBody,
+    );
   }
 
+  //region UI
   Widget _createLogo() => Image.asset("assets/Ideaspacelogo.png");
 
   Widget _createField(TextEditingController controller, IconData prefixIcon, String label, String hint,
@@ -112,6 +134,85 @@ class _LoginState extends State<Login> {
 
     return _createField(controller, prefixIcon, label, hint, suffix: visibilityToggle, obscureText: !showPassword);
   }
+
+  Widget _createLoginButton(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.only(left: 30, right: 30),
+      width: double.infinity,
+      height: _fieldHeight * 0.8,
+      child: ElevatedButton(
+        style: ButtonStyle(
+          shape: MaterialStateProperty.all(RoundedRectangleBorder(borderRadius: BorderRadius.circular(18))),
+          backgroundColor: MaterialStateProperty.all(Color.fromRGBO(104, 127, 154, 10)),
+        ),
+        child: Text(!isSignUp ? "Log in" : "Sign Up",
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+        onPressed: () => isSignUp ? _signUp() : _login(context),
+      ),
+    );
+  }
+
+  Widget _createSignUpButton() {
+    return TextButton(
+      onPressed: () => setState(() => isSignUp = !isSignUp),
+      child: Text(
+        isSignUp ? "Log in" : "Sign Up",
+        style: TextStyle(fontSize: 14, color: Colors.blue[600], decoration: TextDecoration.underline),
+      ),
+    );
+  }
+
+  //endregion
+
+  //region Logic
+  void _login(BuildContext context) async {
+    if (_username == "" || _password == "") return;
+
+    bool validCredentials = false;
+    String correctPassword = widget.manager.getUserPassword(_username);
+    if (correctPassword != null) {
+      if (_password == correctPassword) {
+        validCredentials = true;
+      }
+    }
+
+    if (validCredentials) {
+      Navigator.of(context).push(MaterialPageRoute(builder: (context) => HomePage(MindMapManager())));
+    } else {
+      debugPrint("Invalid");
+      showDialog(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              title: Text("Incorrect credentials"),
+              actions: [
+                FlatButton(
+                  child: Text('Ok'),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                ),
+              ],
+            );
+          });
+    }
+  }
+
+  void _signUp() {
+    if (_username == "" || _password == "") return;
+
+    if (_password != _confirmPassword) {
+      return;
+    }
+
+    bool duplicateUsername = widget.manager.getUserPassword(_username) != null;
+    if (duplicateUsername) {
+    } else {
+      widget.manager.addNewUser(_username, _password);
+      Navigator.of(context).push(MaterialPageRoute(builder: (context) => HomePage(MindMapManager())));
+    }
+  }
+//endregion
 }
 
 // Row(
