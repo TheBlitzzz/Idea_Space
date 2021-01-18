@@ -1,8 +1,13 @@
 part of mind_map;
 
 class MindMapEditorPage extends StatefulWidget {
+  final MindMapModel data;
+  final MindMapManager manager;
+
+  MindMapEditorPage(this.data, this.manager);
+
   @override
-  State<StatefulWidget> createState() => MindMapEditorState();
+  State<StatefulWidget> createState() => MindMapEditorState(data.title);
 }
 
 class MindMapEditorState extends State<MindMapEditorPage> with TickerProviderStateMixin {
@@ -12,9 +17,10 @@ class MindMapEditorState extends State<MindMapEditorPage> with TickerProviderSta
   Offset editorToolsPosition;
   int lastSelectedNodeIndex;
   bool isEditingTitle = false;
-  String title = "New MindMap";
-  TextEditingController titleController ;
+  TextEditingController titleController;
   FloatingActionButton floatingButton;
+
+  String title;
 
   bool isLinking = false;
   int linkStartIndex;
@@ -25,10 +31,12 @@ class MindMapEditorState extends State<MindMapEditorPage> with TickerProviderSta
   Animation editorToolsAnim;
   Widget editorTools;
 
+  MindMapEditorState(this.title);
+
   @override
   void initState() {
     super.initState();
-    titleController = TextEditingController ();
+    titleController = TextEditingController();
     viewerTransformation = TransformationController();
 
     editorToolsController = AnimationController(
@@ -69,7 +77,7 @@ class MindMapEditorState extends State<MindMapEditorPage> with TickerProviderSta
         isLinking = true;
       }),
       child: Icon(
-        Icons.more_vert,
+        Icons.text_fields,
         size: buttonSize / 3 * 2,
       ),
       style: buttonStyle,
@@ -81,7 +89,7 @@ class MindMapEditorState extends State<MindMapEditorPage> with TickerProviderSta
     ).setPosition(Offset(size / 2, size / 2));
 
     Widget editorToolStack = Stack(
-      children: [editorToolDrawer, addButton, imageButton, shapesButton],
+      children: [editorToolDrawer, addButton],
     );
 
     editorTools = ScaleTransition(
@@ -101,48 +109,46 @@ class MindMapEditorState extends State<MindMapEditorPage> with TickerProviderSta
   @override
   Widget build(BuildContext context) {
     AppBar bar = AppBar(
-      title: isEditingTitle ?
-      TextField(
-        autofocus: true,
-          controller: titleController..text = title,
-          decoration: InputDecoration(
-              border: InputBorder.none,
-              hintText: 'Title'
-      ),
-        onSubmitted: (value){
-            setState(() {
-              isEditingTitle = false;
-              title = value;
-              debugPrint ("submitting");
-            });
-        },
-      ): GestureDetector(
-          onLongPress: () {
-            setState(() {
-              isEditingTitle = true;
-              debugPrint ("changing title");
-            });
-          },
-    child: Text(
-    title,
-    style: TextStyle(color: Colors.white),
-      ),
-      ),
-      actions: [
-
-        IconButton(
-          icon: Icon(Icons.undo),
-          onPressed: () => debugPrint("UNDOING"),
-        ),
-        IconButton(
-          icon: Icon(Icons.redo),
-          onPressed: () => debugPrint("REDOING"),
-        ),
-        IconButton(
-          icon: Icon(Icons.more_vert),
-          onPressed: () => debugPrint("Going into mind map settings"),
-        ),
-      ],
+      title: isEditingTitle
+          ? TextField(
+              autofocus: true,
+              controller: titleController..text = title,
+              decoration: InputDecoration(border: InputBorder.none, hintText: 'Title'),
+              onSubmitted: (value) {
+                setState(() {
+                  isEditingTitle = false;
+                  widget.manager.renameMindMap(title, value);
+                  title = value;
+                  debugPrint("submitting");
+                });
+              },
+            )
+          : GestureDetector(
+              onLongPress: () {
+                setState(() {
+                  isEditingTitle = true;
+                  debugPrint("changing title");
+                });
+              },
+              child: Text(
+                title,
+                style: TextStyle(color: Colors.white),
+              ),
+            ),
+      // actions: [
+      // IconButton(
+      //   icon: Icon(Icons.undo),
+      //   onPressed: () => debugPrint("UNDOING"),
+      // ),
+      // IconButton(
+      //   icon: Icon(Icons.redo),
+      //   onPressed: () => debugPrint("REDOING"),
+      // ),
+      // IconButton(
+      //   icon: Icon(Icons.more_vert),
+      //   onPressed: () => debugPrint("Going into mind map settings"),
+      // ),
+      // ],
       backgroundColor: Colors.blueGrey[800],
     );
     Widget contextHelper = Align(
@@ -160,7 +166,7 @@ class MindMapEditorState extends State<MindMapEditorPage> with TickerProviderSta
           contextHelper,
         ],
       ),
-      floatingActionButton: floatingButton,
+      // floatingActionButton: floatingButton,
     );
   }
 
@@ -214,6 +220,7 @@ class MindMapEditorState extends State<MindMapEditorPage> with TickerProviderSta
     return interactiveViewer;
   }
 
+  //region Logic
   void _createNode(Offset position) {
     int index = nodeWidgets.length;
     setState(() {
@@ -258,6 +265,13 @@ class MindMapEditorState extends State<MindMapEditorPage> with TickerProviderSta
     });
   }
 
+  void startLinkingNodes(int from) {
+    setState(() {
+      isLinking = true;
+      linkStartIndex = from;
+    });
+  }
+
   void deselectActiveSelection() {
     setState(() {
       editorToolsPosition = null;
@@ -284,4 +298,5 @@ class MindMapEditorState extends State<MindMapEditorPage> with TickerProviderSta
       nodeWidgets.insert(lastSelectedNodeIndex, widget);
     }
   }
+//endregion
 }

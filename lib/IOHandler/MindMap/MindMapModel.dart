@@ -29,7 +29,7 @@ class MindMapModel {
     isBookMarked = !isBookMarked;
   }
 
-  void rename(String newTitle) {
+  void _rename(String newTitle) {
     title = newTitle;
   }
 }

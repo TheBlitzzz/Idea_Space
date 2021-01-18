@@ -46,8 +46,10 @@ class _HomePageState extends State<HomePage> {
       ),
       endDrawer: _createSettingsDrawer(context),
       floatingActionButton: FloatingActionButton(
-        child: Icon(Icons.add, size: 36),
-        onPressed: () => showDialog(context: context, builder: (_) => _createAddMindMapDialog()),
+        backgroundColor: Colors.grey[800],
+        foregroundColor: Colors.grey[200],
+        child: Icon(Icons.refresh, size: 36),
+        onPressed: _refresh,
       ),
       bottomNavigationBar: _createBottomNavigationBar(),
     );
@@ -207,7 +209,7 @@ class _HomePageState extends State<HomePage> {
     // bottom divider
     children.add(Container(height: 2, color: Colors.white).align(Alignment.bottomCenter));
     // button to open the file
-    children.add(InkWell(onTap: () => _openMindMap()));
+    children.add(InkWell(onTap: () => _openMindMap(data)));
 
     var row = Row(
       mainAxisAlignment: MainAxisAlignment.end,
@@ -248,8 +250,8 @@ class _HomePageState extends State<HomePage> {
           label: "Bookmarked",
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.share),
-          label: "Shared",
+          icon: Icon(Icons.add),
+          label: "Add",
         ),
       ],
       iconSize: 32,
@@ -258,7 +260,10 @@ class _HomePageState extends State<HomePage> {
       selectedItemColor: Colors.white,
       unselectedItemColor: Colors.grey[600],
       onTap: (index) => setState(() {
-        if (index == 3) return;
+        if (index == 3) {
+          showDialog(context: context, builder: (_) => _createAddMindMapDialog());
+          return;
+        }
         _selectedIndex = index;
         searchDomain = widget.manager.getFiles(MindMapType.values[_selectedIndex]);
       }),
@@ -293,6 +298,8 @@ class _HomePageState extends State<HomePage> {
     searchDomain = tempDomain;
   }
 
+  void _refresh() => _searchFile(); //setState(() {});
+
   void _createNewMindMap(String mindMapName) {
     setState(() => widget.manager.addNewMindMap(MindMapModel(mindMapName, DateTime.now())));
     _searchFile();
@@ -308,8 +315,8 @@ class _HomePageState extends State<HomePage> {
     _searchFile();
   }
 
-  //todo add title parameter
-  void _openMindMap() => Navigator.push(context, MaterialPageRoute(builder: (context) => MindMapEditorPage()));
+  void _openMindMap(MindMapModel data) =>
+      Navigator.push(context, MaterialPageRoute(builder: (context) => MindMapEditorPage(data, widget.manager)));
 //endregion
 }
 

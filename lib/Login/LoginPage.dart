@@ -102,7 +102,7 @@ class _LoginState extends State<Login> {
     );
 
     return Scaffold(
-      backgroundColor: Color.fromRGBO(22, 36, 71, 10),
+      backgroundColor: Color.fromARGB(255, 10, 36, 71),
       body: allUsers == null ? futureMainBody : mainBody,
     );
   }
@@ -166,7 +166,10 @@ class _LoginState extends State<Login> {
 
   //region Logic
   void _login(BuildContext context) async {
-    if (_username == "" || _password == "") return;
+    if (_username == "" || _password == "") {
+      _showWarning("Username and password fields cannot be empty");
+      return;
+    }
 
     bool validCredentials = false;
     String correctPassword = widget.manager.getUserPassword(_username);
@@ -179,38 +182,60 @@ class _LoginState extends State<Login> {
     if (validCredentials) {
       Navigator.of(context).push(MaterialPageRoute(builder: (context) => HomePage(MindMapManager())));
     } else {
-      debugPrint("Invalid");
-      showDialog(
-          context: context,
-          builder: (context) {
-            return AlertDialog(
-              title: Text("Incorrect credentials"),
-              actions: [
-                FlatButton(
-                  child: Text('Ok'),
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                ),
-              ],
-            );
-          });
+      _showWarning("Invalid Credentials");
     }
   }
 
   void _signUp() {
-    if (_username == "" || _password == "") return;
+    if (_username == "" || _password == "" || _confirmPassword == "") {
+      _showWarning("Username, password and confirm password fields cannot be empty");
+      return;
+    }
 
     if (_password != _confirmPassword) {
+      _showWarning("Password and confirm password fields do not match");
+      return;
+    }
+
+    // (?=.*[A-Z])       // should contain at least one upper case
+    //   (?=.*[a-z])       // should contain at least one lower case
+    //   (?=.*?[0-9])          // should contain at least one digit
+    //   (?=.*?[!@#\$&*~]).{8,}  // should contain at least one Special character
+
+    Pattern pattern = r'^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[!@#\$&*~]).{8,}$';
+    RegExp regExp = new RegExp(pattern);
+    if (!regExp.hasMatch(_password)) {
+      _showWarning(
+          "Password should contain at least one upper case and lower case letter each, one digit and a special character.");
       return;
     }
 
     bool duplicateUsername = widget.manager.getUserPassword(_username) != null;
     if (duplicateUsername) {
+      _showWarning("Username has already been taken");
     } else {
       widget.manager.addNewUser(_username, _password);
       Navigator.of(context).push(MaterialPageRoute(builder: (context) => HomePage(MindMapManager())));
     }
+  }
+
+  void _showWarning(String warningText) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(warningText),
+          actions: [
+            FlatButton(
+              child: Text('Ok'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 //endregion
 }

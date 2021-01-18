@@ -48,7 +48,7 @@ class SelectedNodeState extends State<SelectedNodeWidget> {
       ),
     ).setSizeAndOffset(toolsOffset + Offset(0, 60), Size(40, 40));
     Widget linkButton = ElevatedButton(
-      // onPressed: () => widget.rootMindMap.deleteNode(widget.node.id),
+      onPressed: () => widget.rootMindMap.startLinkingNodes(widget.node.id),
       style: ButtonStyle(
         padding: MaterialStateProperty.all(EdgeInsets.all(5)),
         backgroundColor: MaterialStateProperty.all(Colors.teal[500]),

@@ -66,10 +66,17 @@ class MindMapManager {
     save();
   }
 
-  void renameMindMap(int index, String newTitle) {
-    data.allMindMaps[index].rename(newTitle);
-    _updateFileLists();
-    save();
+  void renameMindMap(String oldName, String newTitle) {
+    MindMapModel mindMap;
+    for (int i = 0; i < data.allMindMaps.length; i++) {
+      var element = data.allMindMaps[i];
+      if (element.title == oldName) {
+        element._rename(newTitle);
+        _updateFileLists();
+        save();
+        return;
+      }
+    }
   }
 
   void updateFileLastEdit(int index) {
