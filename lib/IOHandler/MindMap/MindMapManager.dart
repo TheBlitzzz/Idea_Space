@@ -1,7 +1,7 @@
-part of data_io;
+part of io_handler;
 
 class MindMapManager {
-  static const String _fileIndexerPath = "Index.txt";
+  static const String _mindMapIndexPath = "Index.txt";
 
   MindMapListModel data;
 
@@ -22,40 +22,18 @@ class MindMapManager {
     }
   }
 
-  Future<String> get _getFilePath async {
-    final appDirectory = await getApplicationDocumentsDirectory();
-    final filePath = p.join(appDirectory.path, _fileIndexerPath);
-    debugPrint("File path is $filePath");
-    return filePath;
-  }
-
-  Future<File> get _getJSONFile async {
-    final filePath = await _getFilePath;
-    if (await File(filePath).exists()) {
-      return File(filePath);
-    }
-    debugPrint("No file found");
-    return null;
-  }
-
-  Future<MindMapListModel> get readFileIndex async {
-    var file = await _getJSONFile;
-    if (file == null) {
+  Future<List<MindMapModel>> readFromFile() async {
+    var contents = await readFileAsString([_mindMapIndexPath]);
+    if (contents == null) {
       data = MindMapListModel();
-      file = await writeToFile();
+    } else {
+      data = MindMapListModel.fromJson(jsonDecode(contents));
     }
-    final contents = await file.readAsString();
-    Map fileMap = jsonDecode(contents);
-    data = MindMapListModel.fromJson(fileMap);
     _updateFileLists();
-
-    return data;
+    return data.allMindMaps;
   }
 
-  Future<File> writeToFile() async {
-    final file = File(await _getFilePath);
-    return file.writeAsString(jsonEncode(data));
-  }
+  void save() => writeFile(jsonEncode(data), [_mindMapIndexPath]);
 
   void _updateFileLists() {
     var allFiles = [];
@@ -76,21 +54,53 @@ class MindMapManager {
     favouriteMindMaps.sort((a, b) => a.title.compareTo(b.title));
   }
 
-  void addNewFile(MindMapModel model) {
+  void addNewMindMap(MindMapModel model) {
     data.allMindMaps.add(model);
     _updateFileLists();
-    writeToFile();
+    save();
+  }
+
+  void toggleBookmark(int index) {
+    data.allMindMaps[index].toggleBookmark();
+    _updateFileLists();
+    save();
+  }
+
+  void renameMindMap(String oldName, String newTitle) {
+    MindMapModel mindMap;
+    for (int i = 0; i < data.allMindMaps.length; i++) {
+      var element = data.allMindMaps[i];
+      if (element.title == oldName) {
+        element._rename(newTitle);
+        _updateFileLists();
+        save();
+        return;
+      }
+    }
   }
 
   void updateFileLastEdit(int index) {
     data.allMindMaps[index].updateLastEdit();
     _updateFileLists();
-    writeToFile();
+    save();
   }
 
-  void deleteFileAt(int index) {
+  void deleteMindMapAt(int index) {
     data.allMindMaps.removeAt(index);
     _updateFileLists();
-    writeToFile();
+    save();
   }
+}
+
+@JsonSerializable()
+class MindMapListModel {
+  List<MindMapModel> allMindMaps;
+
+  MindMapListModel() {
+    allMindMaps = [];
+  }
+
+  factory MindMapListModel.fromJson(Map<String, dynamic> json) => _$MindMapListModelFromJson(json);
+
+  Map<String, dynamic> toJson() => _$MindMapListModelToJson(this);
 }

@@ -1,8 +1,7 @@
-part of data_io;
+part of io_handler;
 
 @JsonSerializable()
 class MindMapModel {
-  String filePath;
   String title;
   DateTime lastEditTime;
   bool isBookMarked;
@@ -16,7 +15,7 @@ class MindMapModel {
     return "Last edit : $year-$month-$day $hour:$minute";
   }
 
-  MindMapModel(this.filePath, this.title, this.lastEditTime, {this.isBookMarked = false});
+  MindMapModel(this.title, this.lastEditTime, {this.isBookMarked = false});
 
   factory MindMapModel.fromJson(Map<String, dynamic> json) => _$MindMapModelFromJson(json);
 
@@ -24,5 +23,13 @@ class MindMapModel {
 
   void updateLastEdit() {
     lastEditTime = DateTime.now();
+  }
+
+  void toggleBookmark() {
+    isBookMarked = !isBookMarked;
+  }
+
+  void _rename(String newTitle) {
+    title = newTitle;
   }
 }

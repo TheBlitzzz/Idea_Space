@@ -9,4 +9,4 @@ part 'ExpandableBoxWidget.dart';
 
 part 'SearchFieldWidget.dart';
 
-const double _borderRadius = 20;
+const double _borderRadius = 10;

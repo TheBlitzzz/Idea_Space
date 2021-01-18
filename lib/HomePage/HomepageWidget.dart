@@ -1,9 +1,9 @@
 part of homepage;
 
 class HomePage extends StatefulWidget {
-  final MindMapManager files;
+  final MindMapManager manager;
 
-  HomePage(this.files);
+  HomePage(this.manager);
 
   @override
   _HomePageState createState() => _HomePageState();
@@ -13,6 +13,7 @@ class _HomePageState extends State<HomePage> {
   final TextEditingController _searchController = TextEditingController();
   int _selectedIndex = 0;
   List<MindMapModel> searchDomain;
+  static const _animDuration = Duration(milliseconds: 500);
 
   @override
   void initState() {
@@ -35,21 +36,26 @@ class _HomePageState extends State<HomePage> {
       ],
     );
     return Scaffold(
+      backgroundColor: Colors.grey[900],
       appBar: new AppBar(
         title: Text("User's Space"),
+        leading: Icon(Icons.account_circle_rounded),
       ),
       body: Center(
         child: stack,
       ),
-      drawer: _createSettingsDrawer(),
+      endDrawer: _createSettingsDrawer(context),
       floatingActionButton: FloatingActionButton(
-        child: Icon(Icons.add, size: 36),
-        onPressed: () => showDialog(context: context, builder: (_) => _createAddMindMapDialog()),
+        backgroundColor: Colors.grey[800],
+        foregroundColor: Colors.grey[200],
+        child: Icon(Icons.refresh, size: 36),
+        onPressed: _refresh,
       ),
       bottomNavigationBar: _createBottomNavigationBar(),
     );
   }
 
+  //region UI
   Widget _createAddMindMapDialog() {
     String mindMapName = "Untitled";
     return AlertDialog(
@@ -61,8 +67,7 @@ class _HomePageState extends State<HomePage> {
         FlatButton(
           child: Text('Create mind map!'),
           onPressed: () {
-            setState(() => widget.files.addNewFile(MindMapModel("$mindMapName.map", mindMapName, DateTime.now())));
-            _searchFile();
+            _createNewMindMap(mindMapName);
             Navigator.of(context).pop();
           },
         ),
@@ -76,14 +81,26 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _createSettingsDrawer() {
+  Widget _createSettingsDrawer(BuildContext context) {
     var aboutWidgets = [
-      Text(
-        "Hello",
-        textAlign: TextAlign.left,
-      ),
-      Text("Hello"),
-      Text("Hello"),
+      BoxItem(
+        widget: Text("Idea space is about bringing ideas to life."),
+        height: 40,
+      )
+    ];
+    var accountWidgets = [
+      BoxItem(
+        widget: InkWell(
+          child: Text("Logout").align(Alignment.center),
+          onTap: () async {
+            Navigator.of(context).pop();
+            await Future.delayed(_animDuration);
+            Navigator.of(context).pop();
+          },
+        ),
+        height: 40,
+        bgColour: Colors.pink[500],
+      )
     ];
 
     return Drawer(
@@ -92,13 +109,13 @@ class _HomePageState extends State<HomePage> {
         children: <Widget>[
           DrawerHeader(
             child: Text('Settings', style: TextStyle(fontSize: 40)),
-            duration: const Duration(milliseconds: 500),
+            duration: _animDuration,
             decoration: BoxDecoration(color: Colors.blue),
           ).wrapSized(height: 150),
-          ExpandableBox(24, [], "Account"),
-          ExpandableBox(24, [], "Theme colour"),
-          ExpandableBox(24, [], "Notification settings"),
-          ExpandableBox(24, aboutWidgets, "About"),
+          ExpandableBox(24, 10, accountWidgets, "Account"),
+          // ExpandableBox(24, 10, [], "Theme colour"),
+          // ExpandableBox(24, 10, [], "Notification settings"),
+          ExpandableBox(24, 10, aboutWidgets, "About"),
         ],
       ),
     );
@@ -114,14 +131,15 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _createCenterList() {
-    Widget builder = FutureBuilder<MindMapListModel>(
-      future: widget.files.readFileIndex,
+    return FutureBuilder<List<MindMapModel>>(
+      future: widget.manager.readFromFile(),
       builder: (context, snapShot) {
         if (searchDomain != null) {
           return _createDocumentList();
         }
+
         if (snapShot.hasData) {
-          searchDomain = snapShot.data.allMindMaps;
+          searchDomain = snapShot.data;
           return _createDocumentList();
         } else {
           return Center(
@@ -144,7 +162,6 @@ class _HomePageState extends State<HomePage> {
         }
       },
     );
-    return builder;
   }
 
   Widget _createDocumentList() {
@@ -159,7 +176,6 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
         child: ListView.builder(
-          // clipBehavior: Clip.hardEdge,
           shrinkWrap: true,
           padding: EdgeInsets.only(left: 10, right: 10),
           itemBuilder: _createDocumentItem,
@@ -193,22 +209,18 @@ class _HomePageState extends State<HomePage> {
     // bottom divider
     children.add(Container(height: 2, color: Colors.white).align(Alignment.bottomCenter));
     // button to open the file
-    children.add(InkWell(onTap: () => _openMindMap()));
+    children.add(InkWell(onTap: () => _openMindMap(data)));
 
     var row = Row(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
         IconButton(
           icon: Icon(Icons.bookmark, color: data.isBookMarked ? Colors.amber : Colors.white),
-          onPressed: () {
-            debugPrint("More Options");
-          },
+          onPressed: () => _toggleBookmark(index),
         ),
         IconButton(
           icon: Icon(Icons.delete, color: Colors.red),
-          onPressed: () {
-            debugPrint("Delete");
-          },
+          onPressed: () => _deleteMindMap(index),
         ),
       ],
     );
@@ -235,11 +247,11 @@ class _HomePageState extends State<HomePage> {
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.bookmark),
-          label: "Favourites",
+          label: "Bookmarked",
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.share),
-          label: "Shared",
+          icon: Icon(Icons.add),
+          label: "Add",
         ),
       ],
       iconSize: 32,
@@ -248,16 +260,22 @@ class _HomePageState extends State<HomePage> {
       selectedItemColor: Colors.white,
       unselectedItemColor: Colors.grey[600],
       onTap: (index) => setState(() {
-        if (index == 3) return;
+        if (index == 3) {
+          showDialog(context: context, builder: (_) => _createAddMindMapDialog());
+          return;
+        }
         _selectedIndex = index;
-        searchDomain = widget.files.getFiles(MindMapType.values[_selectedIndex]);
+        searchDomain = widget.manager.getFiles(MindMapType.values[_selectedIndex]);
       }),
     );
   }
 
+  //endregion
+
+  //region Logic
   void _searchFile({String searchTerm}) {
     setState(() {
-      searchDomain = widget.files.getFiles(MindMapType.values[_selectedIndex]);
+      searchDomain = widget.manager.getFiles(MindMapType.values[_selectedIndex]);
     });
     if (searchTerm == null) {
       searchTerm = _searchController.text;
@@ -276,12 +294,30 @@ class _HomePageState extends State<HomePage> {
       debugPrint("Nothing found");
     }
 
-    tempDomain.sort((a, b) => a.title.compareTo(b.title));
+    tempDomain.sort((a, b) => (a.title.toUpperCase()).compareTo(b.title.toUpperCase()));
     searchDomain = tempDomain;
   }
 
-  //todo add title parameter
-  void _openMindMap() => Navigator.push(context, MaterialPageRoute(builder: (context) => MindMapEditorPage()));
+  void _refresh() => _searchFile(); //setState(() {});
+
+  void _createNewMindMap(String mindMapName) {
+    setState(() => widget.manager.addNewMindMap(MindMapModel(mindMapName, DateTime.now())));
+    _searchFile();
+  }
+
+  void _toggleBookmark(int index) {
+    setState(() => widget.manager.toggleBookmark(index));
+    _searchFile();
+  }
+
+  void _deleteMindMap(int index) {
+    setState(() => widget.manager.deleteMindMapAt(index));
+    _searchFile();
+  }
+
+  void _openMindMap(MindMapModel data) =>
+      Navigator.push(context, MaterialPageRoute(builder: (context) => MindMapEditorPage(data, widget.manager)));
+//endregion
 }
 
 // Widget _createDocumentTab() {
