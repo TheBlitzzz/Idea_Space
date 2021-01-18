@@ -1,19 +1,19 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of data_io;
+part of io_handler;
 
 // **************************************************************************
 // JsonSerializableGenerator
 // **************************************************************************
 
-MindMapListModel _$FileIndexModelFromJson(Map<String, dynamic> json) {
+MindMapListModel _$MindMapListModelFromJson(Map<String, dynamic> json) {
   return MindMapListModel()
     ..allMindMaps = (json['allFiles'] as List)
         ?.map((e) => e == null ? null : MindMapModel.fromJson(e as Map<String, dynamic>))
         ?.toList();
 }
 
-Map<String, dynamic> _$FileIndexModelToJson(MindMapListModel instance) => <String, dynamic>{
+Map<String, dynamic> _$MindMapListModelToJson(MindMapListModel instance) => <String, dynamic>{
       'allFiles': instance.allMindMaps,
     };
 

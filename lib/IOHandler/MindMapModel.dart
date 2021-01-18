@@ -1,4 +1,4 @@
-part of data_io;
+part of io_handler;
 
 @JsonSerializable()
 class MindMapModel {
