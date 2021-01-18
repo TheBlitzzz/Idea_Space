@@ -1,20 +1,20 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of mind_map_data;
+part of data_io;
 
 // **************************************************************************
 // JsonSerializableGenerator
 // **************************************************************************
 
-FileIndexModel _$FileIndexModelFromJson(Map<String, dynamic> json) {
-  return FileIndexModel()
-    ..allFiles = (json['allFiles'] as List)
+MindMapListModel _$FileIndexModelFromJson(Map<String, dynamic> json) {
+  return MindMapListModel()
+    ..allMindMaps = (json['allFiles'] as List)
         ?.map((e) => e == null ? null : MindMapModel.fromJson(e as Map<String, dynamic>))
         ?.toList();
 }
 
-Map<String, dynamic> _$FileIndexModelToJson(FileIndexModel instance) => <String, dynamic>{
-      'allFiles': instance.allFiles,
+Map<String, dynamic> _$FileIndexModelToJson(MindMapListModel instance) => <String, dynamic>{
+      'allFiles': instance.allMindMaps,
     };
 
 MindMapModel _$MindMapModelFromJson(Map<String, dynamic> json) {

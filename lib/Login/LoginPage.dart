@@ -69,7 +69,7 @@ class _LoginState extends State<Login> {
                         fontSize: 16,
                       )),
                   onPressed: () =>
-                      Navigator.of(context).push(MaterialPageRoute(builder: (context) => HomePage(FileIndexer()))),
+                      Navigator.of(context).push(MaterialPageRoute(builder: (context) => HomePage(MindMapManager()))),
                 ),
               ),
               TextButton(
