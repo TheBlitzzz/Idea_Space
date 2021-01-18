@@ -25,7 +25,7 @@ class FileIndexer {
   Future<String> get _getFilePath async {
     final appDirectory = await getApplicationDocumentsDirectory();
     final filePath = p.join(appDirectory.path, _fileIndexerPath);
-    debugPrint(filePath);
+    debugPrint("File path is $filePath");
     return filePath;
   }
 

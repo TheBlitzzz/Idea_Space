@@ -1,4 +1,4 @@
-part of homepage;
+part of custom_widgets;
 
 class ExpandableBox extends StatefulWidget {
   final double fieldHeight;
