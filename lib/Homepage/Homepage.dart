@@ -4,8 +4,9 @@ import 'dart:ui';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+
 import 'package:idea_space/CustomWidgets/CustomWidgets.dart';
-import 'package:idea_space/MindMap/MindMap.dart';
+import 'package:idea_space/MindMapping/MindMapping.dart';
 import 'package:idea_space/IOHandler/IOHandler.dart';
 import 'package:idea_space/zExtensions/WidgetTransforms.dart';
 

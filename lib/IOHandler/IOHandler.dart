@@ -7,12 +7,11 @@ import 'package:flutter/material.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
+import 'package:stateprovider/stateprovider.dart';
 
-part 'MindMap/MindMapManager.dart';
+part 'MindMap/MindMapFileManager.dart';
 
-part 'MindMap/MindMapModel.dart';
-
-part 'MindMap/MindMapType.dart';
+part 'MindMap/MindMapFileModel.dart';
 
 part 'Users/UserManager.dart';
 
@@ -22,18 +21,20 @@ part 'NodeModel.dart';
 
 part 'IOHandler.g.dart';
 
-Future<String> getPersistentPath(List<String> fileDir) async {
+Future<Directory> _getPersistentPath(List<String> fileDir) async {
   final appDirectory = await getApplicationDocumentsDirectory();
   String filePath = appDirectory.path;
   for (int i = 0; i < fileDir.length; i++) {
     filePath = p.join(filePath, fileDir[i]);
   }
-  debugPrint("File path is $filePath");
-  return filePath;
+
+  Directory dir = Directory(filePath);
+  await dir.create(recursive: true);
+  return dir;
 }
 
-Future<String> readFileAsString(List<String> fileDir) async {
-  final filePath = await getPersistentPath(fileDir);
+Future<String> readFileAsString(List<String> fileDir, String fileName) async {
+  final filePath = p.join((await _getPersistentPath(fileDir)).path, fileName);
 
   if (await File(filePath).exists()) {
     return await File(filePath).readAsString();
@@ -43,8 +44,9 @@ Future<String> readFileAsString(List<String> fileDir) async {
   return null;
 }
 
-Future<File> writeFile(String encodedJsonData, List<String> fileDir) async {
-  final filePath = await getPersistentPath(fileDir);
+Future<File> writeFile(String encodedJsonData, List<String> fileDir, String fileName) async {
+  final filePath = p.join((await _getPersistentPath(fileDir)).path, fileName);
+
   final file = File(filePath);
   return file.writeAsString(encodedJsonData);
 }
