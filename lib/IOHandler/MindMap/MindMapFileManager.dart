@@ -1,14 +1,31 @@
 part of io_handler;
 
-class MindMapManager {
+class MindMapFileManager {
   static const String _mindMapIndexPath = "Index.txt";
 
-  MindMapListModel data;
+  String username;
 
-  List<MindMapModel> recentMindMaps;
-  List<MindMapModel> favouriteMindMaps;
+  MindMapFileListModel data;
 
-  List<MindMapModel> getFiles(MindMapType mindMapType) {
+  List<MindMapFileModel> recentMindMaps;
+  List<MindMapFileModel> favouriteMindMaps;
+
+  void setUser(String username) {
+    this.username = username;
+  }
+
+  Future<List<MindMapFileModel>> readFromFile() async {
+    var contents = await readFileAsString([username], _mindMapIndexPath);
+    if (contents == null) {
+      data = MindMapFileListModel();
+    } else {
+      data = MindMapFileListModel.fromJson(jsonDecode(contents));
+    }
+    _updateFileLists();
+    return data.allMindMaps;
+  }
+
+  List<MindMapFileModel> getFiles(MindMapType mindMapType) {
     switch (mindMapType) {
       case MindMapType.All:
         return data.allMindMaps;
@@ -22,18 +39,26 @@ class MindMapManager {
     }
   }
 
-  Future<List<MindMapModel>> readFromFile() async {
-    var contents = await readFileAsString([_mindMapIndexPath]);
-    if (contents == null) {
-      data = MindMapListModel();
-    } else {
-      data = MindMapListModel.fromJson(jsonDecode(contents));
-    }
-    _updateFileLists();
-    return data.allMindMaps;
-  }
+  void save() => writeFile(jsonEncode(data), [username], _mindMapIndexPath);
 
-  void save() => writeFile(jsonEncode(data), [_mindMapIndexPath]);
+  List<MindMapFileModel> searchFile(String searchTerm, MindMapType searchedType) {
+    if (searchTerm == null) searchTerm = "";
+    searchTerm = searchTerm.trim();
+
+    debugPrint("Searching");
+    List<MindMapFileModel> tempDomain = [];
+    getFiles(searchedType).forEach((element) {
+      if (element.title.contains(searchTerm)) tempDomain.add(element);
+    });
+
+    // TODO make the list display 'no files found' text or something
+    if (tempDomain.isEmpty) {
+      debugPrint("Nothing found");
+    }
+
+    tempDomain.sort((a, b) => (a.title.toUpperCase()).compareTo(b.title.toUpperCase()));
+    return tempDomain;
+  }
 
   void _updateFileLists() {
     var allFiles = [];
@@ -54,7 +79,7 @@ class MindMapManager {
     favouriteMindMaps.sort((a, b) => a.title.compareTo(b.title));
   }
 
-  void addNewMindMap(MindMapModel model) {
+  void addNewMindMap(MindMapFileModel model) {
     data.allMindMaps.add(model);
     _updateFileLists();
     save();
@@ -67,7 +92,6 @@ class MindMapManager {
   }
 
   void renameMindMap(String oldName, String newTitle) {
-    MindMapModel mindMap;
     for (int i = 0; i < data.allMindMaps.length; i++) {
       var element = data.allMindMaps[i];
       if (element.title == oldName) {
@@ -92,15 +116,21 @@ class MindMapManager {
   }
 }
 
-@JsonSerializable()
-class MindMapListModel {
-  List<MindMapModel> allMindMaps;
+enum MindMapType {
+  All,
+  Recent,
+  Favourites,
+}
 
-  MindMapListModel() {
+@JsonSerializable()
+class MindMapFileListModel {
+  List<MindMapFileModel> allMindMaps;
+
+  MindMapFileListModel() {
     allMindMaps = [];
   }
 
-  factory MindMapListModel.fromJson(Map<String, dynamic> json) => _$MindMapListModelFromJson(json);
+  factory MindMapFileListModel.fromJson(Map<String, dynamic> json) => _$MindMapFileListModelFromJson(json);
 
-  Map<String, dynamic> toJson() => _$MindMapListModelToJson(this);
+  Map<String, dynamic> toJson() => _$MindMapFileListModelToJson(this);
 }

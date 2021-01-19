@@ -38,8 +38,11 @@ extension WidgetTransforms on Widget {
     );
   }
 
+  // Used heavily
+  /// Wraps the widget with an Align widget.
   Widget align(Alignment alignment) => Align(alignment: alignment, child: this);
 
+  // Used heavily
   /// Wraps the widget with a padding widget with an EdgeInsets.all() padding.
   Widget pad(double left, double right, double top, double bottom) {
     return Padding(

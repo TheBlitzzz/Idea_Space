@@ -1,8 +1,8 @@
 part of mind_map;
 
 class MindMapEditorPage extends StatefulWidget {
-  final MindMapModel data;
-  final MindMapManager manager;
+  final MindMapFileModel data;
+  final MindMapFileManager manager;
 
   MindMapEditorPage(this.data, this.manager);
 

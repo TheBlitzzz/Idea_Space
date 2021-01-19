@@ -1,24 +1,22 @@
 part of homepage;
 
-class HomePage extends StatefulWidget {
-  final MindMapManager manager;
+class Homepage extends StatefulWidget {
+  final UserModel user;
 
-  HomePage(this.manager);
+  Homepage(this.user);
 
   @override
-  _HomePageState createState() => _HomePageState();
+  _HomepageState createState() => _HomepageState();
 }
 
-class _HomePageState extends State<HomePage> {
-  final TextEditingController _searchController = TextEditingController();
-  int _selectedIndex = 0;
-  List<MindMapModel> searchDomain;
+class _HomepageState extends State<Homepage> {
   static const _animDuration = Duration(milliseconds: 500);
 
-  @override
-  void initState() {
-    super.initState();
-  }
+  final TextEditingController _searchController = TextEditingController();
+  final MindMapFileManager manager = new MindMapFileManager();
+
+  int _selectedIndex = 0;
+  List<MindMapFileModel> searchDomain;
 
   @override
   void dispose() {
@@ -28,28 +26,29 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    Widget stack = Stack(
-      fit: StackFit.expand,
-      children: [
-        _createCenterList(),
-        _createSearchBar(),
-      ],
-    );
+    manager.setUser(widget.user.username);
+
     return Scaffold(
       backgroundColor: Colors.grey[900],
-      appBar: new AppBar(
-        title: Text("User's Space"),
+      appBar: AppBar(
+        title: Text("${widget.user.username}'s Space"),
         leading: Icon(Icons.account_circle_rounded),
       ),
       body: Center(
-        child: stack,
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            searchDomain != null ? _createDocumentList() : _createFutureDocumentList(),
+            _createSearchBar(),
+          ],
+        ),
       ),
       endDrawer: _createSettingsDrawer(context),
       floatingActionButton: FloatingActionButton(
         backgroundColor: Colors.grey[800],
         foregroundColor: Colors.grey[200],
-        child: Icon(Icons.refresh, size: 36),
-        onPressed: _refresh,
+        child: Icon(Icons.add, size: 36),
+        onPressed: () => showDialog(context: context, builder: (_) => _createAddMindMapDialog()),
       ),
       bottomNavigationBar: _createBottomNavigationBar(),
     );
@@ -73,9 +72,7 @@ class _HomePageState extends State<HomePage> {
         ),
         FlatButton(
           child: Text('Never mind'),
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
+          onPressed: () => Navigator.of(context).pop(),
         )
       ],
     );
@@ -130,37 +127,30 @@ class _HomePageState extends State<HomePage> {
     ).pad(10, 10, 10, 10);
   }
 
-  Widget _createCenterList() {
-    return FutureBuilder<List<MindMapModel>>(
-      future: widget.manager.readFromFile(),
+  Widget _createFutureDocumentList() {
+    return FutureBuilder<List<MindMapFileModel>>(
+      future: manager.readFromFile(),
       builder: (context, snapShot) {
-        if (searchDomain != null) {
-          return _createDocumentList();
-        }
-
         if (snapShot.hasData) {
           searchDomain = snapShot.data;
           return _createDocumentList();
         } else {
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: <Widget>[
-                SizedBox(
-                  child: CircularProgressIndicator(),
-                  width: 60,
-                  height: 60,
-                ),
-                const Padding(
-                  padding: EdgeInsets.only(top: 16),
-                  child: Text('Awaiting result...'),
-                )
-              ],
-            ),
-          );
+          return _createLoadProgressIndicator();
         }
       },
+    );
+  }
+
+  Widget _createLoadProgressIndicator() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: <Widget>[
+          CircularProgressIndicator().setSize(Size(60, 60)),
+          Text('Loading data...').pad(0, 0, 16, 0),
+        ],
+      ),
     );
   }
 
@@ -249,10 +239,6 @@ class _HomePageState extends State<HomePage> {
           icon: Icon(Icons.bookmark),
           label: "Bookmarked",
         ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.add),
-          label: "Add",
-        ),
       ],
       iconSize: 32,
       backgroundColor: Color.fromARGB(255, 27, 27, 47),
@@ -260,12 +246,8 @@ class _HomePageState extends State<HomePage> {
       selectedItemColor: Colors.white,
       unselectedItemColor: Colors.grey[600],
       onTap: (index) => setState(() {
-        if (index == 3) {
-          showDialog(context: context, builder: (_) => _createAddMindMapDialog());
-          return;
-        }
         _selectedIndex = index;
-        searchDomain = widget.manager.getFiles(MindMapType.values[_selectedIndex]);
+        searchDomain = manager.getFiles(MindMapType.values[_selectedIndex]);
       }),
     );
   }
@@ -274,49 +256,30 @@ class _HomePageState extends State<HomePage> {
 
   //region Logic
   void _searchFile({String searchTerm}) {
-    setState(() {
-      searchDomain = widget.manager.getFiles(MindMapType.values[_selectedIndex]);
-    });
-    if (searchTerm == null) {
-      searchTerm = _searchController.text;
-      return;
-    }
-    debugPrint("Searching");
-    List<MindMapModel> tempDomain = [];
-    for (int i = 0; i < searchDomain.length; i++) {
-      if (searchDomain[i].title.contains(searchTerm)) {
-        tempDomain.add(searchDomain[i]);
-      }
-    }
-
-    // TODO make the list display 'no files found' text or something
-    if (tempDomain.isEmpty) {
-      debugPrint("Nothing found");
-    }
-
-    tempDomain.sort((a, b) => (a.title.toUpperCase()).compareTo(b.title.toUpperCase()));
-    searchDomain = tempDomain;
+    if (searchTerm == null) searchTerm = _searchController.text;
+    setState(() => searchDomain = manager.searchFile(searchTerm, MindMapType.values[_selectedIndex]));
   }
 
-  void _refresh() => _searchFile(); //setState(() {});
-
   void _createNewMindMap(String mindMapName) {
-    setState(() => widget.manager.addNewMindMap(MindMapModel(mindMapName, DateTime.now())));
+    setState(() => manager.addNewMindMap(MindMapFileModel(mindMapName, DateTime.now())));
     _searchFile();
   }
 
   void _toggleBookmark(int index) {
-    setState(() => widget.manager.toggleBookmark(index));
+    setState(() => manager.toggleBookmark(index));
     _searchFile();
   }
 
   void _deleteMindMap(int index) {
-    setState(() => widget.manager.deleteMindMapAt(index));
+    setState(() => manager.deleteMindMapAt(index));
     _searchFile();
   }
 
-  void _openMindMap(MindMapModel data) =>
-      Navigator.push(context, MaterialPageRoute(builder: (context) => MindMapEditorPage(data, widget.manager)));
+  void _openMindMap(MindMapFileModel data) {
+    Navigator.push(context, MaterialPageRoute(builder: (context) {
+      return MindMapEditor(data, (newTitle) => manager.renameMindMap(data.title, newTitle));
+    }));
+  }
 //endregion
 }
 

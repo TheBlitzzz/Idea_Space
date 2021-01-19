@@ -1,9 +1,7 @@
 part of login;
 
 class Login extends StatefulWidget {
-  final UserManager manager;
-
-  Login(this.manager);
+  final UserManager manager = UserManager();
 
   @override
   _LoginState createState() => _LoginState();
@@ -16,20 +14,12 @@ class _LoginState extends State<Login> {
   final TextEditingController _usernameController = new TextEditingController();
   final TextEditingController _passwordController = new TextEditingController();
   final TextEditingController _confirmPasswordController = new TextEditingController();
-
-  String get _username {
-    return _usernameController.text.trim();
-  }
-
-  String get _password {
-    return _passwordController.text.trim();
-  }
-
-  String get _confirmPassword {
-    return _confirmPasswordController.text.trim();
-  }
+  String get _username => _usernameController.text;
+  String get _password => _passwordController.text;
+  String get _confirmPassword => _confirmPasswordController.text;
 
   List<UserModel> allUsers;
+  UserModel thisUser;
 
   bool isSignUp = false;
   bool showPassword = false;
@@ -44,8 +34,40 @@ class _LoginState extends State<Login> {
 
   @override
   Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.blueGrey[700], //Color.fromARGB(255, 10, 36, 71),
+      body: allUsers == null ? _createFutureMainBody() : _createMainBody(),
+    );
+  }
+
+  //region UI
+  Widget _createFutureMainBody() {
+    var loadingScreen = Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: <Widget>[
+          SizedBox(
+            child: CircularProgressIndicator(),
+            width: 60,
+            height: 60,
+          ),
+          const Padding(
+            padding: EdgeInsets.only(top: 16),
+            child: Text('Loading...'),
+          )
+        ],
+      ),
+    );
+    return FutureBuilder<List<UserModel>>(
+      future: widget.manager.readFromFile(),
+      builder: (context, snapShot) => snapShot.hasData ? _createMainBody() : loadingScreen,
+    );
+  }
+
+  Widget _createMainBody() {
     var defaultSpacing = SizedBox(height: 20);
-    var mainBody = Center(
+    return Center(
       child: SingleChildScrollView(
         padding: EdgeInsets.all(40.0),
         child: Column(
@@ -73,41 +95,8 @@ class _LoginState extends State<Login> {
         ),
       ),
     );
-    var loadingScreen = Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: <Widget>[
-          SizedBox(
-            child: CircularProgressIndicator(),
-            width: 60,
-            height: 60,
-          ),
-          const Padding(
-            padding: EdgeInsets.only(top: 16),
-            child: Text('Loading...'),
-          )
-        ],
-      ),
-    );
-    var futureMainBody = FutureBuilder<List<UserModel>>(
-      future: widget.manager.readFromFile(),
-      builder: (context, snapShot) {
-        if (snapShot.hasData) {
-          return mainBody;
-        } else {
-          return loadingScreen;
-        }
-      },
-    );
-
-    return Scaffold(
-      backgroundColor: Color.fromARGB(255, 10, 36, 71),
-      body: allUsers == null ? futureMainBody : mainBody,
-    );
   }
 
-  //region UI
   Widget _createLogo() => Image.asset("assets/Ideaspacelogo.png");
 
   Widget _createField(TextEditingController controller, IconData prefixIcon, String label, String hint,
@@ -154,7 +143,7 @@ class _LoginState extends State<Login> {
 
   Widget _createSignUpButton() {
     return TextButton(
-      onPressed: () => setState(() => isSignUp = !isSignUp),
+      onPressed: _toggleLoginSignUp,
       child: Text(
         isSignUp ? "Log in" : "Sign Up",
         style: TextStyle(fontSize: 14, color: Colors.blue[600], decoration: TextDecoration.underline),
@@ -165,6 +154,13 @@ class _LoginState extends State<Login> {
   //endregion
 
   //region Logic
+  void _toggleLoginSignUp() {
+    setState(() => isSignUp = !isSignUp);
+    if (!isSignUp) {
+      _confirmPasswordController.text = "";
+    }
+  }
+
   void _login(BuildContext context) async {
     if (_username == "" || _password == "") {
       _showWarning("Username and password fields cannot be empty");
@@ -172,15 +168,15 @@ class _LoginState extends State<Login> {
     }
 
     bool validCredentials = false;
-    String correctPassword = widget.manager.getUserPassword(_username);
-    if (correctPassword != null) {
-      if (_password == correctPassword) {
+    thisUser = widget.manager.getUser(_username);
+    if (thisUser != null) {
+      if (_password == thisUser.password) {
         validCredentials = true;
       }
     }
 
     if (validCredentials) {
-      Navigator.of(context).push(MaterialPageRoute(builder: (context) => HomePage(MindMapManager())));
+      _navigateToHomepage();
     } else {
       _showWarning("Invalid Credentials");
     }
@@ -197,26 +193,42 @@ class _LoginState extends State<Login> {
       return;
     }
 
-    // (?=.*[A-Z])       // should contain at least one upper case
+    // (?=.*[A-Z])         // should contain at least one upper case
     //   (?=.*[a-z])       // should contain at least one lower case
-    //   (?=.*?[0-9])          // should contain at least one digit
-    //   (?=.*?[!@#\$&*~]).{8,}  // should contain at least one Special character
+    //   (?=.*?[0-9])      // should contain at least one digit
+    //   (?=.*?[!@#\$&*~]) // should contain at least one Special character
+    //   .{8,}             // should be 8 characters long
 
     Pattern pattern = r'^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[!@#\$&*~]).{8,}$';
     RegExp regExp = new RegExp(pattern);
+    debugPrint(_password + "    " + pattern);
     if (!regExp.hasMatch(_password)) {
-      _showWarning(
-          "Password should contain at least one upper case and lower case letter each, one digit and a special character.");
+      _showWarning("Password should contain at least:\n "
+          "  ·one upper case letter\n"
+          "  ·one lower case letter\n"
+          "  ·one digit\n"
+          "  ·one special character\n"
+          "  ·8 characters");
       return;
     }
 
-    bool duplicateUsername = widget.manager.getUserPassword(_username) != null;
+    bool duplicateUsername = widget.manager.getUser(_username) != null;
     if (duplicateUsername) {
       _showWarning("Username has already been taken");
     } else {
-      widget.manager.addNewUser(_username, _password);
-      Navigator.of(context).push(MaterialPageRoute(builder: (context) => HomePage(MindMapManager())));
+      thisUser = new UserModel(_username, _password);
+      widget.manager.addNewUser(thisUser);
+      _navigateToHomepage();
     }
+  }
+
+  void _navigateToHomepage() {
+    Navigator.of(context).push(MaterialPageRoute(builder: (context) => Homepage(thisUser)));
+    setState(() {
+      _usernameController.text = "";
+      _passwordController.text = "";
+      _confirmPasswordController.text = "";
+    });
   }
 
   void _showWarning(String warningText) {
@@ -224,259 +236,13 @@ class _LoginState extends State<Login> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text(warningText),
-          actions: [
-            FlatButton(
-              child: Text('Ok'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
+          title: Text("Error"),
+          content: Text(warningText),
+          actions: [FlatButton(child: Text('Ok'), onPressed: Navigator.of(context).pop)],
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         );
       },
     );
   }
 //endregion
 }
-
-// Row(
-// mainAxisAlignment: MainAxisAlignment.center,
-// children: [
-// TextButton(
-// child: Text(
-// "Sign Up",
-// style: TextStyle(
-// fontSize: 14,
-// color: Colors.blue[600],
-// decoration: TextDecoration.underline,
-// ),
-// ),
-// onPressed: () => setState(() => isSignUp = !isSignUp),
-// ),
-// TextButton(
-// child: Text(
-// "Forgot Password?",
-// style: TextStyle(
-// fontSize: 14,
-// color: Colors.blue[600],
-// decoration: TextDecoration.underline,
-// ),
-// ),
-// ),
-// ],
-// )
-//version 1
-// class LoginPage extends StatefulWidget {
-//   @override
-//   State<StatefulWidget> createState() => LoginState();
-// }
-//
-// class LoginState extends State<LoginPage> with TickerProviderStateMixin {
-//   final TextEditingController usernameController = TextEditingController();
-//   final TextEditingController passwordController = TextEditingController();
-//   final TextEditingController confirmPasswordController = TextEditingController();
-//   bool hideConfirmPassword = true;
-//   bool hidePassword = true;
-//   bool isSignUp = false;
-//
-//   AnimationController _sizeAnimationController;
-//   AnimationController _forgetPasswordController;
-//   Animation<double> _sizeAnimation;
-//
-//   @override
-//   void initState() {
-//     super.initState();
-//     _forgetPasswordController = AnimationController(
-//       duration: const Duration(seconds: 1),
-//       vsync: this,
-//     );
-//     _sizeAnimationController = AnimationController(
-//       duration: const Duration(seconds: 1),
-//       vsync: this,
-//     );
-//     _sizeAnimation = CurvedAnimation(
-//       parent: _sizeAnimationController,
-//       curve: Curves.fastOutSlowIn,
-//     );
-//   }
-//
-//   @override
-//   void dispose() {
-//     _forgetPasswordController.dispose();
-//     _sizeAnimationController.dispose();
-//     usernameController.dispose();
-//     passwordController.dispose();
-//     super.dispose();
-//   }
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     Widget _logo() {
-//       return Image.asset(
-//         'assets/MainLogo.png',
-//         width: 200,
-//         height: 200,
-//       );
-//     }
-//
-//     SizedBox spacing = SizedBox(height: 20);
-//
-//     Radius borderRadius = Radius.circular(10);
-//     OutlineInputBorder textFieldBorder = OutlineInputBorder(borderRadius: BorderRadius.all(borderRadius));
-//
-//     InputDecoration inputDecoration(String hintText, IconData prefixIcon, Widget suffixIcon) {
-//       return InputDecoration(
-//         border: textFieldBorder,
-//         hintStyle: TextStyle(color: Colors.grey[500]),
-//         hintText: hintText,
-//         labelText: hintText,
-//         prefixIcon: Icon(prefixIcon),
-//         suffixIcon: suffixIcon,
-//       );
-//     }
-//
-//     TextField _usernameField() {
-//       return TextField(
-//         decoration: inputDecoration(
-//             "Username",
-//             Icons.account_circle_rounded,
-//             IconButton(
-//               icon: Icon(Icons.clear),
-//               onPressed: () => usernameController.text = "",
-//             )),
-//         controller: usernameController,
-//       );
-//     }
-//
-//     Widget toggleVisibilityButton(bool toggleBoolean) {
-//       return IconButton(
-//         icon: Icon(toggleBoolean ? Icons.visibility_outlined : Icons.visibility_outlined),
-//         onPressed: () => setState(() => toggleBoolean = !toggleBoolean),
-//       );
-//     }
-//
-//     TextField _passwordField() {
-//       return TextField(
-//         decoration: inputDecoration("Password", Icons.lock_outline_rounded, toggleVisibilityButton(hidePassword)),
-//         controller: passwordController,
-//         obscureText: true,
-//         obscuringCharacter: hidePassword ? '*' : null,
-//       );
-//     }
-//
-//     Widget _confirmPasswordField() {
-//       TextField textField = TextField(
-//         style: TextStyle(color: Colors.black),
-//         decoration: inputDecoration(
-//             "Confirm Password", Icons.lock_outline_rounded, toggleVisibilityButton(hideConfirmPassword)),
-//         controller: confirmPasswordController,
-//         obscureText: true,
-//         obscuringCharacter: hideConfirmPassword ? '*' : null,
-//       );
-//       return SizeTransition(
-//         sizeFactor: _sizeAnimation,
-//         axisAlignment: -1,
-//         child: textField,
-//       );
-//     }
-//
-//     Widget _loginButton(String buttonText) {
-//       return SizedBox(
-//         width: MediaQuery.of(context).size.width * 0.6,
-//         height: 40,
-//         child: ElevatedButton(
-//           onPressed: () {
-//             usernameController.text = "";
-//             passwordController.text = "";
-//             confirmPasswordController.text = "";
-//             Navigator.push(context, MaterialPageRoute(builder: (context) => HomepageWidget()));
-//           },
-//           style: ButtonStyle(
-//             backgroundColor: MaterialStateProperty.all(Colors.grey[700]),
-//             shape: MaterialStateProperty.all(RoundedRectangleBorder(borderRadius: BorderRadius.all(borderRadius))),
-//           ),
-//           child: Text(buttonText, style: TextStyle(fontWeight: ui.FontWeight.bold)),
-//         ),
-//       );
-//     }
-//
-//     Widget _switchButton() {
-//       return TextButton(
-//         onPressed: () => setState(() => isSignUp = !isSignUp),
-//         style: ButtonStyle(padding: MaterialStateProperty.all(EdgeInsets.zero)),
-//         child: Text(
-//           isSignUp ? "Login" : "Sign Up",
-//           style: TextStyle(
-//             color: Colors.blue[400],
-//             decoration: TextDecoration.underline,
-//           ),
-//         ),
-//       );
-//     }
-//
-//     Widget _forgetPassword() {
-//       return SizeTransition(
-//         sizeFactor: _forgetPasswordController,
-//         axisAlignment: -1,
-//         child: Align(
-//           alignment: Alignment.center,
-//           child: TextButton(
-//             style: ButtonStyle(padding: MaterialStateProperty.all(EdgeInsets.zero)),
-//             onPressed: () => setState(() => isSignUp = !isSignUp),
-//             child: Text(
-//               "Forgot Password?",
-//               style: TextStyle(
-//                 color: Colors.blue[400],
-//                 decoration: TextDecoration.underline,
-//               ),
-//             ),
-//           ),
-//         ),
-//       );
-//     }
-//
-//     if (isSignUp) {
-//       _sizeAnimationController.forward();
-//       _forgetPasswordController.reverse();
-//     } else {
-//       _sizeAnimationController.reverse();
-//       _forgetPasswordController.forward();
-//     }
-//
-//     var children = [
-//       _logo(),
-//       _usernameField(),
-//       spacing,
-//       _passwordField(),
-//       SizeTransition(
-//         sizeFactor: _sizeAnimation,
-//         axisAlignment: -1,
-//         child: spacing,
-//       ),
-//       _confirmPasswordField(),
-//       spacing,
-//       _loginButton(isSignUp ? "Sign Up" : "Login"),
-//       _switchButton(),
-//       _forgetPassword(),
-//     ];
-//
-//     // Text("Forgot Password?"),
-//     // SizedBox(height: 20),
-//
-//     Widget column = Padding(
-//       padding: EdgeInsets.all(30),
-//       child: Column(
-//         mainAxisAlignment: MainAxisAlignment.center,
-//         children: children,
-//       ),
-//     );
-//
-//     return Scaffold(
-//       appBar: null,
-//       body: Center(
-//         child: column,
-//       ),
-//     );
-//   }
-// }

@@ -6,7 +6,7 @@ class UserManager {
   UserListModel data;
 
   Future<List<UserModel>> readFromFile() async {
-    var contents = await readFileAsString([_userListPath]);
+    var contents = await readFileAsString([], _userListPath);
     if (contents == null) {
       data = UserListModel();
     } else {
@@ -16,20 +16,20 @@ class UserManager {
     return data.allUsers;
   }
 
-  void save() => writeFile(jsonEncode(data), [_userListPath]);
+  void save() => writeFile(jsonEncode(data), [], _userListPath);
 
-  String getUserPassword(String username) {
+  UserModel getUser(String username) {
     for (int i = 0; i < data.allUsers.length; i++) {
       UserModel user = data.allUsers[i];
       if (data.allUsers[i].username == username) {
-        return user.password;
+        return user;
       }
     }
     return null;
   }
 
-  void addNewUser(String username, String password) {
-    data.allUsers.add(UserModel(username, password));
+  void addNewUser(UserModel newUser) {
+    data.allUsers.add(newUser);
     save();
   }
 
