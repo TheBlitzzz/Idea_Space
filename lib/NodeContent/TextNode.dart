@@ -1,8 +1,13 @@
 part of nodes;
 
-class TextNode extends BaseNode {
+class TextNodeModel extends BaseNodeModel {
   String textContent;
 
-  TextNode(int id, Size size, Offset position, bool isSelected)
-      : super(id, "Untitled #$id", size, position, isSelected);
+  TextNodeModel(int id, Size size, Offset position) : super(id, "Untitled #$id", size, position);
+}
+
+class PageNodeModel extends BaseNodeModel {
+  String title;
+
+  PageNodeModel(int id, Size size, Offset position) : super(id, "Untitled #$id", size, position);
 }

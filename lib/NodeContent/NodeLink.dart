@@ -36,8 +36,8 @@ class NodeLinkPainter extends CustomPainter {
 }
 
 class NodeLinkInfo {
-  BaseNode startNode;
-  BaseNode endNode;
+  BaseNodeModel startNode;
+  BaseNodeModel endNode;
 
   NodeLinkInfo(this.startNode, this.endNode);
 }
