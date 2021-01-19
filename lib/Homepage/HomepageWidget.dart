@@ -275,9 +275,14 @@ class _HomepageState extends State<Homepage> {
     _searchFile();
   }
 
+  void _renameMindMap(String oldTitle, String newTitle) {
+    manager.renameMindMap(oldTitle, newTitle);
+    _searchFile();
+  }
+
   void _openMindMap(MindMapFileModel data) {
     Navigator.push(context, MaterialPageRoute(builder: (context) {
-      return MindMapEditor(data, (newTitle) => manager.renameMindMap(data.title, newTitle));
+      return MindMap.Editor(data, (newTitle) => _renameMindMap(data.title, newTitle));
     }));
   }
 //endregion
