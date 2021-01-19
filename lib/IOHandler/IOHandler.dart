@@ -10,11 +10,9 @@ import 'package:path_provider/path_provider.dart';
 import 'package:stateprovider/stateprovider.dart';
 
 part 'MindMap/MindMapFileManager.dart';
-
 part 'MindMap/MindMapFileModel.dart';
 
 part 'Users/UserManager.dart';
-
 part 'Users/UserModel.dart';
 
 part 'NodeModel.dart';

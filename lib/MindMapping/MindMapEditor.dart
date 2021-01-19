@@ -52,7 +52,6 @@ class _MindMapEditorState extends State<MindMapEditor> {
       ),
     );
   }
-
   //endregion
 
 //region Logic

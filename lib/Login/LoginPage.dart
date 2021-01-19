@@ -14,11 +14,8 @@ class _LoginState extends State<Login> {
   final TextEditingController _usernameController = new TextEditingController();
   final TextEditingController _passwordController = new TextEditingController();
   final TextEditingController _confirmPasswordController = new TextEditingController();
-
   String get _username => _usernameController.text;
-
   String get _password => _passwordController.text;
-
   String get _confirmPassword => _confirmPasswordController.text;
 
   List<UserModel> allUsers;
