@@ -1,7 +1,7 @@
 part of mind_map;
 
 class NodeWidget extends StatelessWidget {
-  final BaseNode node;
+  final BaseNodeModel node;
   final MindMapEditorState rootMindMap;
 
   NodeWidget(this.node, this.rootMindMap);

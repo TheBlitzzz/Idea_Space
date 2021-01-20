@@ -5,7 +5,7 @@ part of mind_map;
 /// * linking or connecting to other nodes,
 /// * entering the selected node (delete available after entering node).
 class SelectedNodeWidget extends StatefulWidget {
-  final BaseNode node;
+  final BaseNodeModel node;
   final MindMapEditorState rootMindMap;
 
   SelectedNodeWidget(this.node, this.rootMindMap);

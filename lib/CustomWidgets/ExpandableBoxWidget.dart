@@ -28,7 +28,7 @@ class _ExpandableBoxState extends State<ExpandableBox> with TickerProviderStateM
 
   final double totalHeight;
 
-  double rotEnd = -math.pi / 2;
+  double rotEnd = -Math.pi / 2;
   double rotBegin = 0;
 
   bool isExpanded = false;
@@ -106,10 +106,10 @@ class _ExpandableBoxState extends State<ExpandableBox> with TickerProviderStateM
     setState(() {
       isExpanded = !isExpanded;
       if (isExpanded) {
-        rotBegin = -math.pi / 2;
+        rotBegin = -Math.pi / 2;
         rotEnd = 0;
       } else {
-        rotEnd = -math.pi / 2;
+        rotEnd = -Math.pi / 2;
         rotBegin = 0;
       }
     });

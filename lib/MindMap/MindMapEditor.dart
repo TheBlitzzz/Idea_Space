@@ -12,7 +12,7 @@ class MindMapEditorPage extends StatefulWidget {
 
 class MindMapEditorState extends State<MindMapEditorPage> with TickerProviderStateMixin {
   List<Widget> nodeWidgets = List();
-  List<BaseNode> nodes = List();
+  List<BaseNodeModel> nodes = List();
   List<Widget> nodeLinks = List();
   Offset editorToolsPosition;
   int lastSelectedNodeIndex;
@@ -224,7 +224,7 @@ class MindMapEditorState extends State<MindMapEditorPage> with TickerProviderSta
   void _createNode(Offset position) {
     int index = nodeWidgets.length;
     setState(() {
-      nodes.add(TextNode(index, Size(120, 80), position, false));
+      // nodes.add(TextNodeModel(index, Size(120, 80), position, false));
       NodeWidget nodeWidget = NodeWidget(
         nodes[index],
         this,
@@ -290,7 +290,7 @@ class MindMapEditorState extends State<MindMapEditorPage> with TickerProviderSta
 
   void _setLastSelected(bool value) {
     if (lastSelectedNodeIndex != null) {
-      nodes[lastSelectedNodeIndex].isSelected = value;
+      // nodes[lastSelectedNodeIndex].isSelected = value;
       nodeWidgets.removeAt(lastSelectedNodeIndex);
       Widget widget = value
           ? SelectedNodeWidget(nodes[lastSelectedNodeIndex], this)

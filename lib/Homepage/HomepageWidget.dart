@@ -64,16 +64,16 @@ class _HomepageState extends State<Homepage> {
       ),
       actions: <Widget>[
         FlatButton(
-          child: Text('Create mind map!'),
+          child: Text('Create'),
           onPressed: () {
             _createNewMindMap(mindMapName);
             Navigator.of(context).pop();
           },
         ),
         FlatButton(
-          child: Text('Never mind'),
+          child: Text('Cancels'),
           onPressed: () => Navigator.of(context).pop(),
-        )
+        ),
       ],
     );
   }
@@ -275,12 +275,17 @@ class _HomepageState extends State<Homepage> {
     _searchFile();
   }
 
+  void _renameMindMap(String oldTitle, String newTitle) {
+    manager.renameMindMap(oldTitle, newTitle);
+    _searchFile();
+  }
+
   void _openMindMap(MindMapFileModel data) {
     Navigator.push(context, MaterialPageRoute(builder: (context) {
-      return MindMapEditor(data, (newTitle) => manager.renameMindMap(data.title, newTitle));
+      return MindMap.Editor(data, (newTitle) => _renameMindMap(data.title, newTitle));
     }));
   }
-//endregion
+  //endregion
 }
 
 // Widget _createDocumentTab() {
