@@ -16,8 +16,8 @@ class _PageNode extends StatelessWidget {
       child: _createNodeWidget(),
       top: position.dy,
       left: position.dx,
-      height: node.size.height,
-      width: node.size.width,
+      height: node.height,
+      width: node.width,
     );
   }
 
@@ -53,8 +53,8 @@ class _TextNode extends StatelessWidget {
       child: _createText(() => showEditDialog(context)),
       top: position.dy,
       left: position.dx,
-      width: node.size.width,
-      height: node.size.height,
+      width: node.width,
+      height: node.height,
     );
   }
 
