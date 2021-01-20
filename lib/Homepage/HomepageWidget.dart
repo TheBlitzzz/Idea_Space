@@ -285,7 +285,7 @@ class _HomepageState extends State<Homepage> {
       return MindMap.Editor(data, (newTitle) => _renameMindMap(data.title, newTitle));
     }));
   }
-//endregion
+  //endregion
 }
 
 // Widget _createDocumentTab() {

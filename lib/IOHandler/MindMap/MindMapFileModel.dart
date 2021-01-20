@@ -1,7 +1,7 @@
 part of io_handler;
 
 @JsonSerializable()
-class MindMapFileModel extends Store<MindMapFileModel> {
+class MindMapFileModel {
   String title;
   DateTime lastEditTime;
   bool isBookMarked;

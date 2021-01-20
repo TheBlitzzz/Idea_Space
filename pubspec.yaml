@@ -35,6 +35,9 @@ dependencies:
   # Used to encode and decode data into and from JSON format.
   json_annotation: 3.1.1
 
+  # Lets the user upload images into the application.
+  image_picker: ^0.6.6+5
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -46,6 +49,7 @@ dev_dependencies:
   json_serializable: 3.5.1
 
   stateprovider: 0.5.1
+
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

@@ -17,12 +17,8 @@ class _EditorState extends State<Editor> {
   final TransformationController _viewerController = new TransformationController();
   final TextEditingController _textNodeEditingController = new TextEditingController();
 
-  // final List<PageNodeModel> pageNodes = [];
-  // final List<TextNodeModel> textNodes = [];
-  // final Size _defaultNodeSize = Size(120, 40);
-
   _eMindMapEditorState state = _eMindMapEditorState.PanAndZoom;
-  Offset lastTapPos;
+  Offset _lastTapPos;
   double zoomAmt;
 
   int selectedNodeIndex;
@@ -74,7 +70,7 @@ class _EditorState extends State<Editor> {
     }
     children.add(Stack(children: nodeWidgets));
 
-    if (lastTapPos != null) {
+    if (_lastTapPos != null) {
       // tap marker
       children.add(Positioned(
         child: Container(
@@ -87,8 +83,8 @@ class _EditorState extends State<Editor> {
           width: _tapMarkerSize,
           height: _tapMarkerSize,
         ),
-        top: lastTapPos.dy - _tapMarkerSize / 2,
-        left: lastTapPos.dx - _tapMarkerSize / 2,
+        top: _lastTapPos.dy - _tapMarkerSize / 2,
+        left: _lastTapPos.dx - _tapMarkerSize / 2,
       ));
 
       // line
@@ -99,8 +95,8 @@ class _EditorState extends State<Editor> {
           height: _editorToolLineWidth,
           width: state == _eMindMapEditorState.Adding ? _editorToolLength * (4 / 3) : 0,
         ),
-        top: lastTapPos.dy - _editorToolLineWidth / 2,
-        left: lastTapPos.dx + _tapMarkerSize / 2,
+        top: _lastTapPos.dy - _editorToolLineWidth / 2,
+        left: _lastTapPos.dx + _tapMarkerSize / 2,
       ));
 
       // Add buttons
@@ -115,7 +111,7 @@ class _EditorState extends State<Editor> {
                 _createAddButton(Icons.image_outlined, null, () {
                   setState(() {
                     state = _eMindMapEditorState.PanAndZoom;
-                    lastTapPos = null;
+                    _lastTapPos = null;
                   });
                   debugPrint("image");
                 }),
@@ -131,14 +127,14 @@ class _EditorState extends State<Editor> {
           height: _tapMarkerSize * 2,
           width: state == _eMindMapEditorState.Adding ? _editorToolLength : 0,
         ),
-        top: lastTapPos.dy - _tapMarkerSize,
-        left: lastTapPos.dx + (_tapMarkerSize / 2) + (_editorToolLength / 6),
+        top: _lastTapPos.dy - _tapMarkerSize,
+        left: _lastTapPos.dx + (_tapMarkerSize / 2) + (_editorToolLength / 6),
       ));
 
       // Dot
       children.add(Positioned(
-        top: lastTapPos.dy - _tapMarkerSize / 4,
-        left: lastTapPos.dx + _tapMarkerSize / 4 + _editorToolLength * (4 / 3),
+        top: _lastTapPos.dy - _tapMarkerSize / 4,
+        left: _lastTapPos.dx + _tapMarkerSize / 4 + _editorToolLength * (4 / 3),
         child: AnimatedContainer(
           duration: state == _eMindMapEditorState.Adding ? _animDuration : Duration.zero,
           decoration: BoxDecoration(shape: BoxShape.circle, color: _editorToolColour),
@@ -146,6 +142,25 @@ class _EditorState extends State<Editor> {
           width: state == _eMindMapEditorState.Adding ? _tapMarkerSize / 2 : 0,
         ),
       ));
+      // if (state == _eMindMapEditorState.Adding) {
+      //   children.add(_MindMapToolStack(
+      //     _lastTapPos,
+      //     true,
+      //     onTap: () {},
+      //     addFunctions: [_addNode, _addText, _addImage],
+      //     tapMarkerSize: 30,
+      //   ));
+      // } else {
+      //   children.add(_MindMapToolStack(
+      //     _lastTapPos,
+      //     false,
+      //     onTap: () => setState(() {
+      //       state = _eMindMapEditorState.Adding;
+      //     }),
+      //     addFunctions: [_addNode, _addText, _addImage],
+      //     tapMarkerSize: 30,
+      //   ));
+      // }
     }
 
     return InteractiveViewer(
@@ -196,24 +211,32 @@ class _EditorState extends State<Editor> {
 
   void _onViewerTap(details) {
     setState(() {
-      lastTapPos = details.localPosition;
+      _lastTapPos = state == _eMindMapEditorState.Adding ? null : details.localPosition;
       _deselect();
     });
   }
 
   void _addNode() {
-    factory.addPageNode(lastTapPos);
+    factory.addPageNode(_lastTapPos);
     setState(() {
       state = _eMindMapEditorState.PanAndZoom;
-      lastTapPos = null;
+      _lastTapPos = null;
     });
   }
 
   void _addText() {
-    factory.addTextNode(lastTapPos);
+    factory.addTextNode(_lastTapPos);
     setState(() {
       state = _eMindMapEditorState.PanAndZoom;
-      lastTapPos = null;
+      _lastTapPos = null;
+    });
+  }
+
+  void _addImage() {
+    factory.addTextNode(_lastTapPos);
+    setState(() {
+      state = _eMindMapEditorState.PanAndZoom;
+      _lastTapPos = null;
     });
   }
 
@@ -224,7 +247,7 @@ class _EditorState extends State<Editor> {
       // }
       selectedNodeIndex = index;
       state = index == null ? _eMindMapEditorState.PanAndZoom : _eMindMapEditorState.Selecting;
-      if (index != null) lastTapPos = null;
+      if (index != null) _lastTapPos = null;
     });
   }
 
@@ -237,3 +260,5 @@ enum _eMindMapEditorState {
   Adding,
   Selecting,
 }
+
+//todo move, resize nodes

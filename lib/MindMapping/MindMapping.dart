@@ -14,7 +14,7 @@ part 'NodeWidgets.dart';
 
 part 'NodeFactory.dart';
 
-part 'NodeToolStack.dart';
+part 'ToolWidgets.dart';
 
 const double _borderRadius = 10, _buttonSize = 30;
 const _animDuration = Duration(milliseconds: 100);
