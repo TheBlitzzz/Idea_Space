@@ -1,7 +1,7 @@
 part of mind_map;
 
 class _NodeFactory {
-  final Size _defaultNodeSize = Size(120, 40);
+  final double _defaultWidth = 120, _defaultHeight = 30;
   int _indexCount;
 
   List<PageNodeModel> _pageNodes;
@@ -20,14 +20,14 @@ class _NodeFactory {
 
   PageNodeModel addPageNode(Offset offset) {
     _indexCount++;
-    var newPage = PageNodeModel(_indexCount, _defaultNodeSize, offset);
+    var newPage = PageNodeModel(_indexCount, _defaultWidth, _defaultHeight, offset.dx, offset.dy);
     _pageNodes.add(newPage);
     return newPage;
   }
 
   TextNodeModel addTextNode(Offset offset) {
     _indexCount++;
-    var newText = TextNodeModel(_indexCount, _defaultNodeSize, offset);
+    var newText = TextNodeModel(_indexCount, _defaultWidth, _defaultHeight, offset.dx, offset.dy);
     _textNodes.add(newText);
     return newText;
   }

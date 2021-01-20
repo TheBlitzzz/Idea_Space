@@ -19,7 +19,7 @@ class _NodeToolStack extends StatelessWidget {
     children.add(_createNodeToolButton(1, Icons.link, () => debugPrint("Linking")));
     children.add(_createNodeToolButton(2, Icons.delete, () => debugPrint("Delete")));
 
-    Offset toolPos = isSelected ? node.getPosition + Offset(0, node.size.height) : Offset.zero;
+    Offset toolPos = isSelected ? node.getPosition + Offset(0, node.height) : Offset.zero;
     return Positioned(
       child: Stack(
         children: children,

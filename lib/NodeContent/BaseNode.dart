@@ -3,24 +3,26 @@ part of nodes;
 abstract class BaseNodeModel {
   int id;
   String title;
-  Size size;
-  Offset position;
+  double width;
+  double height;
+  double dx;
+  double dy;
 
-  List<NodeConnection> links;
+  List<NodeLinkModel> links;
 
-  BaseNodeModel(this.id, this.title, this.size, this.position) {
+  BaseNodeModel(this.id, this.title, this.width, this.height, this.dx, this.dy) {
     links = [];
   }
 
   Offset get getPosition {
-    return position - Offset(size.width / 2, size.height / 2);
+    return Offset(dx - width / 2, dy - height / 2);
   }
 
-  void addConnection(NodeConnection connection) {
+  void addConnection(NodeLinkModel connection) {
     links.add(connection);
   }
 
-  void removeConnection(NodeConnection connection) {
+  void removeConnection(NodeLinkModel connection) {
     links.remove(connection);
   }
 
@@ -31,11 +33,16 @@ abstract class BaseNodeModel {
   }
 }
 
-class NodeConnection {
+@JsonSerializable()
+class NodeLinkModel {
   int startNodeId;
   int endNodeId;
 
-  NodeConnection(this.startNodeId, this.endNodeId);
+  NodeLinkModel(this.startNodeId, this.endNodeId);
+
+  factory NodeLinkModel.fromJson(Map<String, dynamic> json) => _$NodeLinkModelFromJson(json);
+
+  Map<String, dynamic> toJson() => _$NodeLinkModelToJson(this);
 
   void onDelete(List<BaseNodeModel> nodeList) {
     nodeList[startNodeId].removeConnection(this);
