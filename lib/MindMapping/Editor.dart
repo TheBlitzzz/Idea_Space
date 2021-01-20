@@ -1,10 +1,11 @@
 part of mind_map;
 
 class Editor extends StatefulWidget {
-  final MindMapFileModel data;
+  final MindMapFileModel fileData;
+  final MindMapModel data;
   final void Function(String) renameFunc;
 
-  Editor(this.data, this.renameFunc);
+  Editor(this.fileData, this.data, this.renameFunc);
 
   @override
   _EditorState createState() => _EditorState();
@@ -26,7 +27,7 @@ class _EditorState extends State<Editor> {
   _NodeFactory factory;
 
   _EditorState() {
-    factory = new _NodeFactory(_selectNode);
+    factory = new _NodeFactory(_selectNode, widget.data);
   }
 
   @override
@@ -45,7 +46,7 @@ class _EditorState extends State<Editor> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: EditableTitle(_editTitle, widget.data.title),
+        title: EditableTitle(_editTitle, widget.fileData.title),
       ),
       body: _createMindMapViewer(),
     );

@@ -1,12 +1,13 @@
 part of io_handler;
 
 class MindMapFileManager {
-  static const String _mindMapIndexPath = "Index.txt";
+  static const String _mindMapIndexPath = "Index.txt", _fileExtension = ".map";
 
   String username;
 
   MindMapFileListModel data;
 
+  List<MindMapModel> allFiles;
   List<MindMapFileModel> recentMindMaps;
   List<MindMapFileModel> favouriteMindMaps;
 
@@ -14,16 +15,18 @@ class MindMapFileManager {
     this.username = username;
   }
 
-  Future<List<MindMapFileModel>> readFromFile() async {
+  Future<List<MindMapFileModel>> read() async {
     var contents = await readFileAsString([username], _mindMapIndexPath);
     if (contents == null) {
-      data = MindMapFileListModel();
+      data = MindMapFileListModel([]);
     } else {
       data = MindMapFileListModel.fromJson(jsonDecode(contents));
     }
     _updateFileLists();
     return data.allMindMaps;
   }
+
+  void save() => writeFile(jsonEncode(data), [username], _mindMapIndexPath);
 
   List<MindMapFileModel> getFiles(MindMapType mindMapType) {
     switch (mindMapType) {
@@ -39,7 +42,10 @@ class MindMapFileManager {
     }
   }
 
-  void save() => writeFile(jsonEncode(data), [username], _mindMapIndexPath);
+  Future<MindMapModel> getMindMap(String mindMapTitle) async {
+    var contents = await readFileAsString([username], mindMapTitle + _fileExtension);
+    return MindMapModel.fromJson(jsonDecode(contents));
+  }
 
   List<MindMapFileModel> searchFile(String searchTerm, MindMapType searchedType) {
     if (searchTerm == null) searchTerm = "";
@@ -81,6 +87,8 @@ class MindMapFileManager {
 
   void addNewMindMap(MindMapFileModel model) {
     data.allMindMaps.add(model);
+    var newMindMapModel = MindMapModel(model, 0, [], []);
+    writeFile(jsonEncode(newMindMapModel), [username], model.title + _fileExtension);
     _updateFileLists();
     save();
   }
@@ -126,11 +134,10 @@ enum MindMapType {
 class MindMapFileListModel {
   List<MindMapFileModel> allMindMaps;
 
-  MindMapFileListModel() {
-    allMindMaps = [];
-  }
+  MindMapFileListModel(this.allMindMaps);
 
+  //region JSON
   factory MindMapFileListModel.fromJson(Map<String, dynamic> json) => _$MindMapFileListModelFromJson(json);
-
   Map<String, dynamic> toJson() => _$MindMapFileListModelToJson(this);
+//endregion
 }

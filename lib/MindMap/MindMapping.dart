@@ -1,4 +1,4 @@
-library mind_map;
+library mind_mapping;
 
 import 'dart:math';
 

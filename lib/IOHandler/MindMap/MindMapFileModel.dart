@@ -21,15 +21,9 @@ class MindMapFileModel {
 
   Map<String, dynamic> toJson() => _$MindMapFileModelToJson(this);
 
-  void updateLastEdit() {
-    lastEditTime = DateTime.now();
-  }
+  void updateLastEdit() => lastEditTime = DateTime.now();
 
-  void toggleBookmark() {
-    isBookMarked = !isBookMarked;
-  }
+  void toggleBookmark() => isBookMarked = !isBookMarked;
 
-  void _rename(String newTitle) {
-    title = newTitle;
-  }
+  void _rename(String newTitle) => title = newTitle;
 }

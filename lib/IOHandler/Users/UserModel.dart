@@ -1,7 +1,7 @@
 part of io_handler;
 
 @JsonSerializable()
-class UserModel extends Store<UserModel> {
+class UserModel {
   String username;
   String password;
 

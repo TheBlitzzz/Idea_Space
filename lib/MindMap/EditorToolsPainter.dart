@@ -1,4 +1,4 @@
-part of mind_map;
+part of mind_mapping;
 
 class EditorToolsPainter extends CustomPainter {
   final double strokeWidth;

@@ -119,17 +119,12 @@ class _HomepageState extends State<Homepage> {
   }
 
   Widget _createSearchBar() {
-    return Column(
-      children: [
-        SizedBox(height: 10),
-        SearchField(_searchController, _searchFile),
-      ],
-    ).pad(10, 10, 10, 10);
+    return Column(children: [SizedBox(height: 10), SearchField(_searchController, _searchFile)]).pad(10, 10, 10, 10);
   }
 
   Widget _createFutureDocumentList() {
     return FutureBuilder<List<MindMapFileModel>>(
-      future: manager.readFromFile(),
+      future: manager.read(),
       builder: (context, snapShot) {
         if (snapShot.hasData) {
           searchDomain = snapShot.data;
@@ -261,7 +256,8 @@ class _HomepageState extends State<Homepage> {
   }
 
   void _createNewMindMap(String mindMapName) {
-    setState(() => manager.addNewMindMap(MindMapFileModel(mindMapName, DateTime.now())));
+    var newMindMap = MindMapFileModel(mindMapName, DateTime.now());
+    setState(() => manager.addNewMindMap(newMindMap));
     _searchFile();
   }
 
@@ -280,10 +276,11 @@ class _HomepageState extends State<Homepage> {
     _searchFile();
   }
 
-  void _openMindMap(MindMapFileModel data) {
-    Navigator.push(context, MaterialPageRoute(builder: (context) {
-      return MindMap.Editor(data, (newTitle) => _renameMindMap(data.title, newTitle));
-    }));
+  void _openMindMap(MindMapFileModel fileData) async {
+    var mindMapData = await manager.getMindMap(fileData.title);
+    var renameFunc = (newTitle) => _renameMindMap(fileData.title, newTitle);
+
+    Navigator.push(context, MaterialPageRoute(builder: (context) => MindMap.Editor(fileData, mindMapData, renameFunc)));
   }
   //endregion
 }
