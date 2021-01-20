@@ -64,16 +64,16 @@ class _HomepageState extends State<Homepage> {
       ),
       actions: <Widget>[
         FlatButton(
-          child: Text('Create mind map!'),
+          child: Text('Create'),
           onPressed: () {
             _createNewMindMap(mindMapName);
             Navigator.of(context).pop();
           },
         ),
         FlatButton(
-          child: Text('Never mind'),
+          child: Text('Cancels'),
           onPressed: () => Navigator.of(context).pop(),
-        )
+        ),
       ],
     );
   }

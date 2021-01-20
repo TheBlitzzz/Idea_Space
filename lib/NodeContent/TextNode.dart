@@ -7,7 +7,7 @@ class TextNodeModel extends BaseNodeModel {
 }
 
 class PageNodeModel extends BaseNodeModel {
-  String title;
+  // String title;
 
   PageNodeModel(int id, Size size, Offset position) : super(id, "Untitled #$id", size, position);
 }
