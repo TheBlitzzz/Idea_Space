@@ -3,6 +3,7 @@ part of io_handler;
 @JsonSerializable()
 class MindMapFileModel {
   String title;
+  String username;
   DateTime lastEditTime;
   bool isBookMarked;
 
@@ -15,15 +16,19 @@ class MindMapFileModel {
     return "Last edit : $year-$month-$day $hour:$minute";
   }
 
-  MindMapFileModel(this.title, this.lastEditTime, {this.isBookMarked = false});
+  String get fileName => title + ".txt";
 
-  factory MindMapFileModel.fromJson(Map<String, dynamic> json) => _$MindMapFileModelFromJson(json);
-
-  Map<String, dynamic> toJson() => _$MindMapFileModelToJson(this);
+  MindMapFileModel(this.title, this.username, this.lastEditTime, {this.isBookMarked = false});
 
   void updateLastEdit() => lastEditTime = DateTime.now();
 
   void toggleBookmark() => isBookMarked = !isBookMarked;
 
   void _rename(String newTitle) => title = newTitle;
+
+  //region JSON
+  factory MindMapFileModel.fromJson(Map<String, dynamic> json) => _$MindMapFileModelFromJson(json);
+
+  Map<String, dynamic> toJson() => _$MindMapFileModelToJson(this);
+//endregion
 }

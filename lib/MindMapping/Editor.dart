@@ -8,26 +8,30 @@ class Editor extends StatefulWidget {
   Editor(this.fileData, this.data, this.renameFunc);
 
   @override
-  _EditorState createState() => _EditorState();
+  _EditorState createState() => _EditorState(data);
 }
 
 class _EditorState extends State<Editor> {
-  static const double _tapMarkerSize = 30, _editorToolLineWidth = 5, _editorToolLength = 150;
+  static const int _showNodeWidgetsFlag = 1, _showNodeToolsFlag = 2, _showTapMarkerFlag = 4, _showEditorToolsFlag = 8;
+  static const double _tapMarkerSize = 30;
   static const Color _editorToolColour = Color(0xFFAAAAAA);
 
   final TransformationController _viewerController = new TransformationController();
   final TextEditingController _textNodeEditingController = new TextEditingController();
 
-  _eMindMapEditorState state = _eMindMapEditorState.PanAndZoom;
   Offset _lastTapPos;
   double zoomAmt;
-
   int selectedNodeIndex;
-
   _NodeFactory factory;
 
-  _EditorState() {
-    factory = new _NodeFactory(_selectNode, widget.data);
+  Offset _dragStartPos;
+  Offset _nodeStartPos;
+
+  int state = _showNodeWidgetsFlag;
+
+  _EditorState(MindMapModel data) {
+    factory =
+        new _NodeFactory(data, _selectNode, nodeTranslationStart, nodeTranslate, (details, node, hor, ver) => null);
   }
 
   @override
@@ -54,125 +58,34 @@ class _EditorState extends State<Editor> {
 
   //region UI
   Widget _createMindMapViewer() {
-    BoxDecoration boxDecoration = BoxDecoration(
-      gradient: LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: <Color>[Colors.grey[800], Colors.grey[900], Colors.grey[800]],
-        stops: <double>[0.0, 0.5, 1.0],
-      ),
-    );
+    List<Widget> widgetsOnViewer = [];
 
-    List<Widget> children = [];
-
+    //region Nodes and node editor tool
     var nodeWidgets = factory._createNodeWidgets(selectedNodeIndex, _textNodeEditingController);
     if (factory.selectedNode != null) {
-      nodeWidgets.add(_NodeToolStack(factory.selectedNode));
+      nodeWidgets.add(_createNodeTools());
     }
-    children.add(Stack(children: nodeWidgets));
+    widgetsOnViewer.add(Stack(children: nodeWidgets));
+    //endregion
 
-    if (_lastTapPos != null) {
+    //region Editor tap marker and add tools
+    if (_getFlag(_showTapMarkerFlag)) {
       // tap marker
-      children.add(Positioned(
-        child: Container(
-          decoration: BoxDecoration(shape: BoxShape.circle, color: _editorToolColour),
-          child: InkWell(
-            onTap: () => setState(() {
-              state = _eMindMapEditorState.Adding;
-            }),
-          ),
-          width: _tapMarkerSize,
-          height: _tapMarkerSize,
-        ),
-        top: _lastTapPos.dy - _tapMarkerSize / 2,
-        left: _lastTapPos.dx - _tapMarkerSize / 2,
-      ));
+      widgetsOnViewer.add(_createTapMarker());
 
-      // line
-      children.add(Positioned(
-        child: AnimatedContainer(
-          duration: state == _eMindMapEditorState.Adding ? _animDuration : Duration.zero,
-          color: _editorToolColour,
-          height: _editorToolLineWidth,
-          width: state == _eMindMapEditorState.Adding ? _editorToolLength * (4 / 3) : 0,
-        ),
-        top: _lastTapPos.dy - _editorToolLineWidth / 2,
-        left: _lastTapPos.dx + _tapMarkerSize / 2,
-      ));
-
-      // Add buttons
-      children.add(Positioned(
-        child: AnimatedContainer(
-          child: SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: [
-                _createAddButton(Icons.add, null, _addNode),
-                _createAddButton(Icons.text_fields_outlined, Color(0x44FFFFFF), _addText),
-                _createAddButton(Icons.image_outlined, null, () {
-                  setState(() {
-                    state = _eMindMapEditorState.PanAndZoom;
-                    _lastTapPos = null;
-                  });
-                  debugPrint("image");
-                }),
-              ],
-            ),
-          ),
-          duration: state == _eMindMapEditorState.Adding ? _animDuration : Duration.zero,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(20),
-            color: Color(0xFF002244),
-            border: Border.all(color: _editorToolColour, width: _editorToolLineWidth / 2),
-          ),
-          height: _tapMarkerSize * 2,
-          width: state == _eMindMapEditorState.Adding ? _editorToolLength : 0,
-        ),
-        top: _lastTapPos.dy - _tapMarkerSize,
-        left: _lastTapPos.dx + (_tapMarkerSize / 2) + (_editorToolLength / 6),
-      ));
-
-      // Dot
-      children.add(Positioned(
-        top: _lastTapPos.dy - _tapMarkerSize / 4,
-        left: _lastTapPos.dx + _tapMarkerSize / 4 + _editorToolLength * (4 / 3),
-        child: AnimatedContainer(
-          duration: state == _eMindMapEditorState.Adding ? _animDuration : Duration.zero,
-          decoration: BoxDecoration(shape: BoxShape.circle, color: _editorToolColour),
-          height: _tapMarkerSize / 2,
-          width: state == _eMindMapEditorState.Adding ? _tapMarkerSize / 2 : 0,
-        ),
-      ));
-      // if (state == _eMindMapEditorState.Adding) {
-      //   children.add(_MindMapToolStack(
-      //     _lastTapPos,
-      //     true,
-      //     onTap: () {},
-      //     addFunctions: [_addNode, _addText, _addImage],
-      //     tapMarkerSize: 30,
-      //   ));
-      // } else {
-      //   children.add(_MindMapToolStack(
-      //     _lastTapPos,
-      //     false,
-      //     onTap: () => setState(() {
-      //       state = _eMindMapEditorState.Adding;
-      //     }),
-      //     addFunctions: [_addNode, _addText, _addImage],
-      //     tapMarkerSize: 30,
-      //   ));
-      // }
+      if (_getFlag(_showEditorToolsFlag)) {
+        widgetsOnViewer.add(_createEditorTools());
+      }
     }
+    //endregion
 
     return InteractiveViewer(
       child: GestureDetector(
         child: Container(
-          child: Stack(
-            children: children,
-          ),
+          child: Stack(children: widgetsOnViewer),
+          color: Colors.grey[850],
           height: 3580,
           width: 2480,
-          decoration: boxDecoration,
         ),
         onTapUp: _onViewerTap,
       ),
@@ -186,80 +99,152 @@ class _EditorState extends State<Editor> {
     );
   }
 
-  Widget _createAddButton(IconData icon, Color colour, Function() onTap) {
-    return AnimatedContainer(
-      child: state == _eMindMapEditorState.Adding
-          ? InkWell(
-              onTap: onTap,
-              child: Icon(icon),
-            )
-          : null,
-      duration: state == _eMindMapEditorState.Adding ? _animDuration : Duration.zero,
-      color: colour,
-      height: double.infinity,
-      width: state == _eMindMapEditorState.Adding ? _editorToolLength / 3 - 1 : 0,
+  Widget _createNodeTools() {
+    var node = factory.selectedNode;
+    var position = node.getPosition + Offset(10, node.height);
+    var actions = [
+      ToolAction(Icons.edit_outlined, () => debugPrint("Add")),
+      ToolAction(Icons.link, () => debugPrint("Link")),
+      ToolAction(Icons.delete, () => debugPrint("Delete")),
+    ];
+    return _NodeToolStack(position, actions);
+  }
+
+  Widget _createTapMarker() {
+    return Positioned(
+      child: Container(
+        decoration: BoxDecoration(shape: BoxShape.circle, color: _editorToolColour),
+        child: InkWell(onTap: _openAddTools),
+        width: _tapMarkerSize,
+        height: _tapMarkerSize,
+      ),
+      top: _lastTapPos.dy - _tapMarkerSize / 2,
+      left: _lastTapPos.dx - _tapMarkerSize / 2,
     );
+  }
+
+  Widget _createEditorTools() {
+    var position = _lastTapPos + Offset(0, _tapMarkerSize / 2);
+    var actions = [
+      ToolAction(Icons.add, _addNode),
+      ToolAction(Icons.text_fields_outlined, _addText),
+      ToolAction(Icons.image_outlined, () => debugPrint("Image")),
+    ];
+    return _NodeToolStack(position, actions);
   }
 
   //endregion
 
 //region Logic
+  //region State
+  bool _getFlag(int flag) => (state & flag) == flag;
+
+  void _setFlag(int flag, bool value) => setState(() => value ? state |= flag : state &= ~flag);
+
+  //endregion
+
   void _editTitle(String newTitle) {
     setState(() {
       widget.renameFunc(newTitle);
     });
   }
 
-  void _onViewerTap(details) {
+  // void _setDragStart(Offset anchor) {
+  //   dragStartPos = anchor;
+  //   nodeStartSize = widget.node.size;
+  //   nodeStartPos = widget.node.position;
+  // }
+
+//   void _resize(Offset currentPos, int horizontalDir, int verticalDir) {
+//     setState(() {
+//       horizontalDir = horizontalDir * 2 - 1;
+//       verticalDir = verticalDir * 2 - 1;
+//       double dx = (horizontalDir * -dragStartPos.dx) + (horizontalDir * currentPos.dx);
+//       double dy = (verticalDir * -dragStartPos.dy) + (verticalDir * currentPos.dy);
+//       widget.node.size = Size((nodeStartSize.width + dx).abs(), (nodeStartSize.height + dy).abs());
+//       double offsetX = dx / 2 * horizontalDir;
+//       double offsetY = dy / 2 * verticalDir;
+//       widget.node.position = Offset(nodeStartPos.dx + offsetX, nodeStartPos.dy + offsetY);
+//     });
+//   }
+
+  //region Select
+  void _onViewerTap(TapUpDetails details) {
     setState(() {
-      _lastTapPos = state == _eMindMapEditorState.Adding ? null : details.localPosition;
-      _deselect();
+      _setFlag(_showTapMarkerFlag, true);
+      _lastTapPos = details.localPosition;
+      _selectNode(null);
     });
   }
 
+  void _openAddTools() => _setFlag(_showEditorToolsFlag, true);
+
+  void _selectNode(int index) {
+    setState(() {
+      selectedNodeIndex = index;
+      if (index == null) {
+        // Deselect or clear select
+        _setFlag(_showNodeToolsFlag, false);
+        _setFlag(_showEditorToolsFlag, false);
+      } else {
+        // Stop drawing the tap marker.
+        _setFlag(_showNodeToolsFlag, true);
+        _setFlag(_showTapMarkerFlag, false);
+      }
+    });
+  }
+
+  //endregion
+
+  //region Add functions
   void _addNode() {
     factory.addPageNode(_lastTapPos);
-    setState(() {
-      state = _eMindMapEditorState.PanAndZoom;
-      _lastTapPos = null;
-    });
+    setState(() => state = _showNodeWidgetsFlag);
   }
 
   void _addText() {
     factory.addTextNode(_lastTapPos);
-    setState(() {
-      state = _eMindMapEditorState.PanAndZoom;
-      _lastTapPos = null;
-    });
+    setState(() => state = _showNodeWidgetsFlag);
   }
 
   void _addImage() {
     factory.addTextNode(_lastTapPos);
-    setState(() {
-      state = _eMindMapEditorState.PanAndZoom;
-      _lastTapPos = null;
-    });
+    setState(() => state = _showNodeWidgetsFlag);
   }
 
-  void _selectNode(int index) {
-    setState(() {
-      // if (selectedNodeIndex != null) {
-      //   _deselect();
-      // }
-      selectedNodeIndex = index;
-      state = index == null ? _eMindMapEditorState.PanAndZoom : _eMindMapEditorState.Selecting;
-      if (index != null) _lastTapPos = null;
-    });
+  //endregion
+  //region Node transformations
+  void nodeTranslationStart(DragStartDetails details, BaseNodeModel node) {
+    _dragStartPos = details.localPosition;
+    _nodeStartPos = Offset(node.dx, node.dy);
   }
 
-  void _deselect() => _selectNode(null);
+  void nodeTranslate(DragUpdateDetails details, BaseNodeModel node) {
+    setState(() {
+      Offset dragVector = details.localPosition - _dragStartPos;
+      node.moveTo(_nodeStartPos + dragVector);
+    });
+  }
+//endregion
 //endregion
 }
 
-enum _eMindMapEditorState {
-  PanAndZoom,
-  Adding,
-  Selecting,
-}
-
 //todo move, resize nodes
+
+//     var horizontalPositions = [0, 1, 0, 1];
+//     var verticalPositions = [0, 0, 1, 1];
+//
+//     List<Widget> widgets = [];
+//     for (int i = 0; i < 4; i++) {
+//       int posX = horizontalPositions[i];
+//       int posY = verticalPositions[i];
+//
+//       Widget cornerWidget = Material(
+//         color: Colors.cyan[200],
+//         borderRadius: BorderRadius.all(Radius.circular(5)),
+//         child: GestureDetector(
+//           behavior: HitTestBehavior.opaque,
+//           onPanStart: (DragStartDetails details) => _setDragStart(details.globalPosition),
+//           onPanUpdate: (DragUpdateDetails details) => _resize(details.globalPosition, posX, posY),
+//         ),
+//       );

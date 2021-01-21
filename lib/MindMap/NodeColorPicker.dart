@@ -15,19 +15,23 @@ class _NodeColorPickerState extends State<NodeColorPicker> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(child: InkWell(onTap: ShowColorPicker,), color: pickerColor,),
-
+      body: Container(
+        child: InkWell(
+          onTap: showColorPicker,
+        ),
+        color: pickerColor,
+      ),
       appBar: AppBar(
         title: Text("ColorPicker"),
       ),
     );
-
   }
+
   void changeColor(Color color) {
     setState(() => pickerColor = color);
   }
 
-  void ShowColorPicker() {
+  void showColorPicker() {
     showDialog(
       context: context,
       child: AlertDialog(
@@ -54,7 +58,7 @@ class _NodeColorPickerState extends State<NodeColorPicker> {
             onColorChanged: changeColor,
           ),
         ),
-          //
+        //
         //   child: MultipleChoiceBlockPicker(
         //     pickerColors: pickerColors,
         //     onColorsChanged: changeColor,
@@ -74,16 +78,9 @@ class _NodeColorPickerState extends State<NodeColorPicker> {
               setState(() => currentColor = oriColor);
               // Navigator.of(context).pop();
             },
-          )  ,
-
-
+          ),
         ],
       ),
     );
   }
 }
-
-
-
-
-

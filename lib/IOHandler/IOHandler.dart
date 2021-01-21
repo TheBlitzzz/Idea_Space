@@ -48,3 +48,12 @@ Future<File> writeFile(String encodedJsonData, List<String> fileDir, String file
   final file = File(filePath);
   return file.writeAsString(encodedJsonData);
 }
+
+void deleteFile(List<String> fileDir, String fileName) async {
+  final filePath = p.join((await _getPersistentPath(fileDir)).path, fileName);
+
+  final file = File(filePath);
+  if (await file.exists()) {
+    file.delete();
+  }
+}

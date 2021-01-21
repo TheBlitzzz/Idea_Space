@@ -1,5 +1,7 @@
 library mind_map;
 
+import 'dart:convert';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -10,8 +12,6 @@ import 'package:idea_space/zExtensions/WidgetTransforms.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'Editor.dart';
-
-part 'NodeWidgets.dart';
 
 part 'NodeFactory.dart';
 

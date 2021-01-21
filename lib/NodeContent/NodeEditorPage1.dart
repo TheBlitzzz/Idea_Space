@@ -1,6 +1,10 @@
 part of nodes;
 
 class NodeEditorContent extends StatefulWidget {
+  final PageNodeModel data;
+
+  NodeEditorContent(this.data);
+
   @override
   _NodeEditorContentState createState() => _NodeEditorContentState();
 }
@@ -27,7 +31,7 @@ class _NodeEditorContentState extends State<NodeEditorContent> with TickerProvid
     return Scaffold(
       appBar: AppBar(
           backgroundColor: Color(0xff1B1B2F),
-          title: EditableTitle(),
+          title: EditableTitle((title) {}, widget.data.title),
           actions: <Widget>[
             IconButton(
               icon: Icon(Icons.menu),
@@ -40,9 +44,8 @@ class _NodeEditorContentState extends State<NodeEditorContent> with TickerProvid
         color: Color(0xff1f4068),
         child: Stack(
           children: [
-            Column(
-              children: [
-                Padding(
+            Column(children: [
+              Padding(
                 padding: const EdgeInsets.fromLTRB(20, 20, 20, 10),
                 child: TextField(
                   maxLines: 1,
@@ -69,90 +72,85 @@ class _NodeEditorContentState extends State<NodeEditorContent> with TickerProvid
                   ),
                 ),
               ),
-            Expanded(
-              child: ListView.builder(
-                shrinkWrap: true,
-                padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
-                itemCount: noteDescription.length,
-                itemBuilder: (context, int i) {
-                  final f = noteDescription[i];
-                  final inputController = f;
-                  return Dismissible(
-                    direction: DismissDirection.endToStart,
-                    key: ValueKey(noteDescription[i]),
-                    background: Container(
-                      alignment: AlignmentDirectional.centerEnd,
-                      color: Colors.red,
+              Expanded(
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
+                  itemCount: noteDescription.length,
+                  itemBuilder: (context, int i) {
+                    final f = noteDescription[i];
+                    final inputController = f;
+                    return Dismissible(
+                      direction: DismissDirection.endToStart,
+                      key: ValueKey(noteDescription[i]),
+                      background: Container(
+                        alignment: AlignmentDirectional.centerEnd,
+                        color: Colors.red,
+                        child: Padding(
+                          padding: EdgeInsets.fromLTRB(0.0, 0.0, 10.0, 0.0),
+                          child: Icon(
+                            Icons.delete,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                      onDismissed: (direction) {
+                        setState(() {
+                          noteDescription.removeAt(i);
+                        });
+                      },
                       child: Padding(
-                        padding: EdgeInsets.fromLTRB(0.0, 0.0, 10.0, 0.0),
-                        child: Icon(
-                          Icons.delete,
-                          color: Colors.white,
+                        padding: const EdgeInsets.fromLTRB(5, 5, 5, 5),
+                        child: TextFormField(
+                          onChanged: (value) {
+                            setState(() {});
+                          },
+                          maxLines: null,
+                          controller: inputController,
+                          decoration: InputDecoration(
+                            filled: true,
+                            suffixIcon: hidingIcon(inputController),
+                            focusedBorder: OutlineInputBorder(
+                              borderSide: BorderSide(
+                                color: Colors.blue,
+                                width: 2,
+                              ),
+                              borderRadius: const BorderRadius.all(
+                                const Radius.circular(10.0),
+                              ),
+                            ),
+                            contentPadding: EdgeInsets.fromLTRB(20, 20, 20, 20),
+                            hintText: "Write your description here",
+                            hintStyle: TextStyle(
+                              fontWeight: FontWeight.bold,
+                            ),
+                            // border: OutlineInputBorder(
+                            //   borderRadius: const BorderRadius.all(
+                            //     const Radius.circular(10.0),
+                            //   ),
+                            // ),
+                          ),
                         ),
                       ),
-                    ),
-                    onDismissed: (direction) {
-                      setState(() {
-                        noteDescription.removeAt(i);
-                      });
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(5,5,5,5),
-                      child: TextFormField(
-                        onChanged: (value) {
-                          setState(() {});
-                        },
-                        maxLines: null,
-                        controller: inputController,
-                        decoration: InputDecoration(
-                          filled: true,
-                          suffixIcon: hidingIcon(inputController),
-                          focusedBorder: OutlineInputBorder(
-                            borderSide: BorderSide(
-                              color: Colors.blue,
-                              width: 2,
-                            ),
-                            borderRadius: const BorderRadius.all(
-                              const Radius.circular(10.0),
-                            ),
-                          ),
-                          contentPadding: EdgeInsets.fromLTRB(20, 20, 20, 20),
-                          hintText: "Write your description here",
-                          hintStyle: TextStyle(
-                            fontWeight: FontWeight.bold,
-                          ),
-                          // border: OutlineInputBorder(
-                          //   borderRadius: const BorderRadius.all(
-                          //     const Radius.circular(10.0),
-                          //   ),
-                          // ),
-                        ),
-                      ),
-                    ),
-                  );
-                },
+                    );
+                  },
+                ),
               ),
-            ),
-            ]
-            ),
+            ]),
             Positioned(
               bottom: 0,
               right: 0,
               left: 0,
               child: Container(
                 height: 50,
-                decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.all(Radius.circular(10))),
+                decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.all(Radius.circular(10))),
                 child: Row(
                   children: [
                     IconButton(
-                      icon: Icon(Icons.format_size,
-                          color: Colors.black, size: 24),
+                      icon: Icon(Icons.format_size, color: Colors.black, size: 24),
                     ),
                     IconButton(
-                      icon: Icon(Icons.format_size,
-                          color: Colors.black, size: 30),
+                      icon: Icon(Icons.format_size, color: Colors.black, size: 30),
                     ),
                     IconButton(
                       icon: Icon(Icons.format_color_text, color: Colors.black),
@@ -161,15 +159,13 @@ class _NodeEditorContentState extends State<NodeEditorContent> with TickerProvid
                       icon: Icon(Icons.format_bold, color: Colors.black),
                     ),
                     IconButton(
-                      icon: Icon(Icons.format_underline_outlined,
-                          color: Colors.black),
+                      icon: Icon(Icons.format_underline_outlined, color: Colors.black),
                     ),
                     IconButton(
                       icon: Icon(Icons.format_italic, color: Colors.black),
                     ),
                     IconButton(
-                      icon:
-                          Icon(Icons.format_list_bulleted, color: Colors.black),
+                      icon: Icon(Icons.format_list_bulleted, color: Colors.black),
                     ),
                   ],
                 ),

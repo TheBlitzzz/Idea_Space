@@ -1,51 +1,63 @@
 part of mind_map;
 
 class _NodeToolStack extends StatelessWidget {
-  static const double _outlineWidth = 3, _dotAndLineWidth = 20, _dotSize = _outlineWidth * 3, _buttonSpacing = 10;
+  static const double _outlineWidth = 3,
+      _dotSize = _outlineWidth * 3,
+      _buttonSpacing = 10,
+      _buttonSizeWithSpacing = _buttonSize + _buttonSpacing;
 
-  final BaseNodeModel node;
-  final bool isSelected;
+  final int linesPerRow;
+  final int _rowCount;
+  final Offset _offset;
+  final bool _isSelected;
+  final List<ToolAction> _actions;
 
-  _NodeToolStack(this.node) : this.isSelected = node != null;
+  _NodeToolStack(this._offset, this._actions, {this.linesPerRow = 3})
+      : this._isSelected = _offset != null,
+        this._rowCount = (_actions.length / linesPerRow).ceil();
 
   @override
   Widget build(BuildContext context) {
     List<Widget> children = [];
 
     children.add(_createAnimLine());
-    children.add(_createAnimDot());
 
-    children.add(_createNodeToolButton(0, Icons.edit, () => _editNode(context)));
-    children.add(_createNodeToolButton(1, Icons.link, () => debugPrint("Linking")));
-    children.add(_createNodeToolButton(2, Icons.delete, () => debugPrint("Delete")));
+    for (int i = 0; i < _rowCount; i++) {
+      children.add(_createAnimDot(i));
+    }
 
-    Offset toolPos = isSelected ? node.getPosition + Offset(0, node.height) : Offset.zero;
+    for (int i = 0; i < _actions.length; i++) {
+      var action = _actions[i];
+      children.add(_createNodeToolButton(i, action.icon, action.onTap));
+    }
+
+    Offset toolPos = _isSelected ? _offset : Offset.zero;
     return Positioned(
       child: Stack(
         children: children,
       ),
       top: toolPos.dy,
-      left: toolPos.dx,
-      width: (_buttonSize * 3) + (_buttonSpacing * 2) + _dotAndLineWidth,
-      height: _buttonSpacing + _buttonSize,
+      left: toolPos.dx - (_dotSize / 2),
+      width: (_buttonSizeWithSpacing * 3) + _buttonSpacing,
+      height: (_buttonSizeWithSpacing) * _rowCount,
     );
   }
 
   //region UI
-
-  Widget _createNodeToolButton(int leftIndent, IconData icon, Function() onPressed) {
+  Widget _createNodeToolButton(int index, IconData icon, Function() onPressed) {
     var borderRadius = BorderRadius.circular(_borderRadius);
+    int row = index ~/ 3;
+    int leftIndent = index % 3;
     return TweenAnimationBuilder<double>(
-      child: Material(
-        child: InkWell(child: Icon(icon), onTap: onPressed, borderRadius: borderRadius),
-        color: _toolOutlineColour,
-        borderRadius: borderRadius,
-      ),
       builder: (context, size, child) {
         return Positioned(
-          child: child,
-          top: _buttonSpacing,
-          left: ((_buttonSize + _buttonSpacing) * leftIndent) + _dotAndLineWidth,
+          child: Material(
+            child: InkWell(child: Icon(icon, size: size * 0.75), onTap: onPressed, borderRadius: borderRadius),
+            color: _toolOutlineColour,
+            borderRadius: borderRadius,
+          ),
+          top: (_buttonSizeWithSpacing * row) + _buttonSpacing,
+          left: (_buttonSizeWithSpacing * leftIndent) + (_buttonSpacing * 2),
           height: size,
           width: _buttonSize,
         );
@@ -65,16 +77,16 @@ class _NodeToolStack extends StatelessWidget {
             decoration: BoxDecoration(color: _toolOutlineColour),
             height: size,
           ),
-          left: (_dotAndLineWidth / 2) - (_outlineWidth / 2),
+          left: (_dotSize / 2) - (_outlineWidth / 2),
           width: _outlineWidth,
         );
       },
       duration: _animDuration,
-      tween: Tween<double>(begin: 0, end: _buttonSize + (_dotSize / 2)),
+      tween: Tween<double>(begin: 0, end: _buttonSize + (_dotSize / 2) + (_buttonSizeWithSpacing * (_rowCount - 1))),
     );
   }
 
-  Widget _createAnimDot() {
+  Widget _createAnimDot(int row) {
     return TweenAnimationBuilder<double>(
       builder: (context, size, child) {
         return Positioned(
@@ -83,8 +95,8 @@ class _NodeToolStack extends StatelessWidget {
             width: size,
             height: size,
           ),
-          top: _buttonSize,
-          left: (_dotAndLineWidth / 2) - (_dotSize / 2),
+          top: _buttonSize + (_buttonSizeWithSpacing * row),
+          left: 0,
         );
       },
       duration: _animDuration,
@@ -94,14 +106,6 @@ class _NodeToolStack extends StatelessWidget {
 
   //endregion
   //endregion
-
-  //region Logic
-  void _editNode(BuildContext context) {
-    if (isSelected) {
-      Navigator.push(context, MaterialPageRoute(builder: (context) => NodeEditorContent()));
-    }
-  }
-//endregion
 }
 
 class ToolAction {
