@@ -3,38 +3,45 @@ part of io_handler;
 class UserManager {
   static const String _userListPath = "Users.txt";
 
-  UserListModel data;
+  UserListModel _data;
 
-  Future<List<UserModel>> readFromFile() async {
+  //region IO
+  Future<List<UserModel>> load() async {
     var contents = await readFileAsString([], _userListPath);
     if (contents == null) {
-      data = UserListModel();
+      reset();
     } else {
-      data = UserListModel.fromJson(jsonDecode(contents));
+      _data = UserListModel.fromJson(jsonDecode(contents));
     }
-
-    return data.allUsers;
+    return _data.allUsers;
   }
 
-  void save() => writeFile(jsonEncode(data), [], _userListPath);
+  void save() => writeFile(jsonEncode(_data), [], _userListPath);
+
+  //endregion
 
   UserModel getUser(String username) {
-    for (int i = 0; i < data.allUsers.length; i++) {
-      UserModel user = data.allUsers[i];
-      if (data.allUsers[i].username == username) {
+    for (int i = 0; i < _data.allUsers.length; i++) {
+      UserModel user = _data.allUsers[i];
+      if (_data.allUsers[i].username == username) {
         return user;
       }
     }
     return null;
   }
 
+  void reset() {
+    _data = UserListModel([]);
+    save();
+  }
+
   void addNewUser(UserModel newUser) {
-    data.allUsers.add(newUser);
+    _data.allUsers.add(newUser);
     save();
   }
 
   void deleteUser(int index) {
-    data.allUsers.removeAt(index);
+    _data.allUsers.removeAt(index);
     save();
   }
 }
@@ -43,9 +50,7 @@ class UserManager {
 class UserListModel {
   List<UserModel> allUsers;
 
-  UserListModel() {
-    allUsers = [];
-  }
+  UserListModel(this.allUsers);
 
   factory UserListModel.fromJson(Map<String, dynamic> json) => _$UserListModelFromJson(json);
 

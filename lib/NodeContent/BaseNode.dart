@@ -18,6 +18,11 @@ abstract class BaseNodeModel {
     return Offset(dx - width / 2, dy - height / 2);
   }
 
+  void moveTo(Offset position) {
+    dx = position.dx;
+    dy = position.dy;
+  }
+
   void addConnection(NodeLinkModel connection) {
     links.add(connection);
   }
@@ -26,11 +31,13 @@ abstract class BaseNodeModel {
     links.remove(connection);
   }
 
-  void onDelete(List<BaseNodeModel> nodeList) {
+  void dispose(List<BaseNodeModel> nodeList) {
     links.forEach((element) {
       element.onDelete(nodeList);
     });
   }
+
+  void edit(BuildContext context);
 }
 
 @JsonSerializable()

@@ -1,8 +1,6 @@
 part of login;
 
 class Login extends StatefulWidget {
-  final UserManager manager = UserManager();
-
   @override
   _LoginState createState() => _LoginState();
 }
@@ -11,16 +9,21 @@ class _LoginState extends State<Login> {
   static const Duration _animDuration = Duration(milliseconds: 250);
   static const double _fieldHeight = 60;
 
+  final UserManager manager = UserManager();
+
   final TextEditingController _usernameController = new TextEditingController();
   final TextEditingController _passwordController = new TextEditingController();
   final TextEditingController _confirmPasswordController = new TextEditingController();
+
   String get _username => _usernameController.text;
+
   String get _password => _passwordController.text;
+
   String get _confirmPassword => _confirmPasswordController.text;
 
-  List<UserModel> allUsers;
   UserModel thisUser;
 
+  bool hasLoaded = false;
   bool isSignUp = false;
   bool showPassword = false;
 
@@ -35,14 +38,33 @@ class _LoginState extends State<Login> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.blueGrey[700], //Color.fromARGB(255, 10, 36, 71),
-      body: allUsers == null ? _createFutureMainBody() : _createMainBody(),
+      // backgroundColor: Colors.blueGrey[700], //Color.fromARGB(255, 10, 36, 71),
+      body: hasLoaded ? _createMainBody() : _createFutureMainBody(),
     );
   }
 
   //region UI
   Widget _createFutureMainBody() {
-    var loadingScreen = Center(
+    return FutureBuilder<List<UserModel>>(
+      future: manager.load(),
+      builder: (context, snapShot) {
+        if (snapShot.hasData) {
+          hasLoaded = true;
+          return _createMainBody();
+        } else if (snapShot.hasError) {
+          debugPrint("File error");
+          manager.reset();
+          hasLoaded = true;
+          return _createMainBody();
+        } else {
+          return _createLoadingScreen();
+        }
+      },
+    );
+  }
+
+  Widget _createLoadingScreen() {
+    return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -58,10 +80,6 @@ class _LoginState extends State<Login> {
           )
         ],
       ),
-    );
-    return FutureBuilder<List<UserModel>>(
-      future: widget.manager.readFromFile(),
-      builder: (context, snapShot) => snapShot.hasData ? _createMainBody() : loadingScreen,
     );
   }
 
@@ -89,7 +107,7 @@ class _LoginState extends State<Login> {
               duration: _animDuration,
               height: isSignUp ? 20 : 0,
             ),
-            _createLoginButton(context),
+            _createLoginButton(),
             _createSignUpButton(),
           ],
         ),
@@ -124,7 +142,7 @@ class _LoginState extends State<Login> {
     return _createField(controller, prefixIcon, label, hint, suffix: visibilityToggle, obscureText: !showPassword);
   }
 
-  Widget _createLoginButton(BuildContext context) {
+  Widget _createLoginButton() {
     return Container(
       padding: EdgeInsets.only(left: 30, right: 30),
       width: double.infinity,
@@ -136,7 +154,7 @@ class _LoginState extends State<Login> {
         ),
         child: Text(!isSignUp ? "Log in" : "Sign Up",
             style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
-        onPressed: () => isSignUp ? _signUp() : _login(context),
+        onPressed: () => isSignUp ? _signUp() : _login(),
       ),
     );
   }
@@ -161,24 +179,23 @@ class _LoginState extends State<Login> {
     }
   }
 
-  void _login(BuildContext context) async {
+  void _login() {
     if (_username == "" || _password == "") {
       _showWarning("Username and password fields cannot be empty");
       return;
     }
 
-    bool validCredentials = false;
-    thisUser = widget.manager.getUser(_username);
+    thisUser = manager.getUser(_username);
     if (thisUser != null) {
       if (_password == thisUser.password) {
-        validCredentials = true;
+        _navigateToHomepage();
+        return;
+      } else {
+        _showWarning("Invalid Credentials");
+        return;
       }
-    }
-
-    if (validCredentials) {
-      _navigateToHomepage();
     } else {
-      _showWarning("Invalid Credentials");
+      _showWarning("No such user");
     }
   }
 
@@ -201,7 +218,6 @@ class _LoginState extends State<Login> {
 
     Pattern pattern = r'^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[!@#\$&*~]).{8,}$';
     RegExp regExp = new RegExp(pattern);
-    debugPrint(_password + "    " + pattern);
     if (!regExp.hasMatch(_password)) {
       _showWarning("Password should contain at least:\n "
           "  ·one upper case letter\n"
@@ -212,12 +228,12 @@ class _LoginState extends State<Login> {
       return;
     }
 
-    bool duplicateUsername = widget.manager.getUser(_username) != null;
+    bool duplicateUsername = manager.getUser(_username) != null;
     if (duplicateUsername) {
       _showWarning("Username has already been taken");
     } else {
       thisUser = new UserModel(_username, _password);
-      widget.manager.addNewUser(thisUser);
+      manager.addNewUser(thisUser);
       _navigateToHomepage();
     }
   }

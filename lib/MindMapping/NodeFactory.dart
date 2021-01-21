@@ -1,64 +1,105 @@
 part of mind_map;
 
-class _NodeFactory {
-  final double _defaultWidth = 120, _defaultHeight = 30;
-  int _indexCount;
+const double _outlineWidth = 3;
 
-  List<PageNodeModel> _pageNodes;
-  List<TextNodeModel> _textNodes;
+class _NodeFactory {
+  final Size defaultSize;
+  final MindMapModel data;
+  final Function(int) selectFunc;
+  final Function(DragStartDetails, BaseNodeModel) nodeTranslationStart;
+  final Function(DragUpdateDetails, BaseNodeModel) nodeTranslation;
+  final Function(DragUpdateDetails, BaseNodeModel, bool, bool) resizeFunc;
 
   BaseNodeModel selectedNode;
-  Function(int) selectFunc;
 
-  _NodeFactory(this.selectFunc,
-      {int pageNodeIdCount, int textNodeIdCount, List<PageNodeModel> pageNodes, List<TextNodeModel> textNodes}) {
-    _indexCount = pageNodeIdCount ?? 0;
-    _indexCount = textNodeIdCount ?? 0;
-    _pageNodes = pageNodes ?? [];
-    _textNodes = textNodes ?? [];
-  }
+  _NodeFactory(this.data, this.selectFunc, this.nodeTranslationStart, this.nodeTranslation, this.resizeFunc,
+      {this.defaultSize = const Size(120, 40)});
 
-  PageNodeModel addPageNode(Offset offset) {
-    _indexCount++;
-    var newPage = PageNodeModel(_indexCount, _defaultWidth, _defaultHeight, offset.dx, offset.dy);
-    _pageNodes.add(newPage);
-    return newPage;
-  }
+  void addPageNode(Offset offset) => data.addPageNode(offset, defaultSize);
 
-  TextNodeModel addTextNode(Offset offset) {
-    _indexCount++;
-    var newText = TextNodeModel(_indexCount, _defaultWidth, _defaultHeight, offset.dx, offset.dy);
-    _textNodes.add(newText);
-    return newText;
-  }
+  void addTextNode(Offset offset) => data.addTextNode(offset, defaultSize);
 
   List<Widget> _createNodeWidgets(int selectedIndex, TextEditingController controller) {
     List<Widget> children = [];
 
     selectedNode = null;
-    _pageNodes.forEach((element) {
+    data.pageNodes.forEach((element) {
       bool isSelected = false;
       if (selectedIndex != null) {
         isSelected = selectedIndex == element.id;
-        if (isSelected == true) {
-          selectedNode = element;
-        }
+        if (isSelected == true) selectedNode = element;
       }
-      children.add(_PageNode(element, isSelected, selectFunc));
+      children.add(_wrapNodeWidget(element, isSelected, eNodeType.Page));
     });
-    _textNodes.forEach((element) {
+    data.textNodes.forEach((element) {
       bool isSelected = false;
       if (selectedIndex != null) {
         isSelected = selectedIndex == element.id;
         if (isSelected == true) {
           selectedNode = element;
-          children.add(_TextNode(element, isSelected, selectFunc, controller));
-          return;
         }
       }
-      children.add(_TextNode(element, isSelected, selectFunc, controller));
+      children.add(_wrapNodeWidget(element, isSelected, eNodeType.Text));
     });
 
     return children;
   }
+
+  Widget _wrapNodeWidget(BaseNodeModel node, bool isSelected, eNodeType type) {
+    Offset position = node.getPosition;
+    Widget child;
+    switch (type) {
+      case eNodeType.Page:
+        child = _createPageNode(node.title, isSelected);
+        break;
+      case eNodeType.Text:
+        child = _createTextNode(node.title, isSelected);
+        break;
+      case eNodeType.Image:
+        // TODO: Handle this case.
+        break;
+    }
+
+    return Positioned(
+      child: GestureDetector(
+        child: child,
+        onTap: () => selectFunc(node.id),
+        onPanUpdate: (details) => nodeTranslation(details, node),
+        onPanStart: (details) => nodeTranslationStart(details, node),
+      ),
+      top: position.dy,
+      left: position.dx,
+      width: node.width,
+      height: node.height,
+    );
+  }
+
+  Widget _createPageNode(String title, bool isSelected) {
+    return Container(
+      child: Text(title).align(Alignment.center),
+      decoration: BoxDecoration(
+        color: Colors.grey[700],
+        borderRadius: BorderRadius.all(Radius.circular(_borderRadius)),
+        border: isSelected ? Border.all(width: _outlineWidth, color: _toolOutlineColour) : null,
+      ),
+    );
+  }
+
+  Widget _createTextNode(String title, bool isSelected) {
+    return Container(
+      child: Text(title, softWrap: true, overflow: TextOverflow.ellipsis),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(_borderRadius),
+        color: isSelected ? Colors.grey[600] : null,
+        border: isSelected ? Border.all(width: _outlineWidth, color: _toolOutlineColour) : null,
+      ),
+      alignment: Alignment.center,
+    );
+  }
+}
+
+enum eNodeType {
+  Page,
+  Text,
+  Image,
 }

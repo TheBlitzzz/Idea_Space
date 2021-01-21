@@ -1,4 +1,4 @@
-part of mind_map;
+part of mind_mapping;
 //
 // /// Temporary replaces a NodeWidget when it is selected for :
 // /// * editing the size and position,

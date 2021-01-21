@@ -4,10 +4,10 @@ import 'dart:convert';
 import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:idea_space/MindMapping/MindMap.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
-import 'package:stateprovider/stateprovider.dart';
 
 part 'MindMap/MindMapFileManager.dart';
 part 'MindMap/MindMapFileModel.dart';
@@ -47,4 +47,13 @@ Future<File> writeFile(String encodedJsonData, List<String> fileDir, String file
 
   final file = File(filePath);
   return file.writeAsString(encodedJsonData);
+}
+
+void deleteFile(List<String> fileDir, String fileName) async {
+  final filePath = p.join((await _getPersistentPath(fileDir)).path, fileName);
+
+  final file = File(filePath);
+  if (await file.exists()) {
+    file.delete();
+  }
 }
