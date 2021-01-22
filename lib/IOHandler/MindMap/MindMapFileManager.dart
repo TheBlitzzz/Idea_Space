@@ -47,6 +47,15 @@ class MindMapFileManager {
     return MindMapModel.fromJson(jsonDecode(contents));
   }
 
+  void renameUser(String newUsername) {
+    renameDir([username], [newUsername]);
+    username = newUsername;
+    _data.allMindMaps.forEach((mindMap) {
+      mindMap.parentUser = username;
+    });
+    save();
+  }
+
   void reset() {
     _data = MindMapFileListModel([]);
     save();
@@ -88,8 +97,8 @@ class MindMapFileManager {
 
   void addNewMindMap(MindMapFileModel model) {
     _data.allMindMaps.add(model);
-    var newMindMapModel = MindMapModel(model, 0, [], []);
-    writeFile(jsonEncode(newMindMapModel), [username], model.fileName);
+    var newMindMapModel = MindMapModel(model);
+    writeFile(jsonEncode(newMindMapModel), [model.parentUser], model.fileName);
     _updateFileLists();
     save();
   }
@@ -104,8 +113,10 @@ class MindMapFileManager {
     for (int i = 0; i < _data.allMindMaps.length; i++) {
       var element = _data.allMindMaps[i];
       if (element.title == oldName) {
+        oldName = element.fileName;
         element._rename(newTitle);
         _updateFileLists();
+        renameFile([element.parentUser], oldName, [element.parentUser], element.fileName);
         save();
         return;
       }

@@ -4,36 +4,98 @@ part of mind_map;
 class MindMapModel {
   MindMapFileModel fileData;
 
-  int indexCount;
+  int nodeIndexCount = 0;
+  int linkIndexCount = 0;
 
-  List<PageNodeModel> pageNodes;
-  List<TextNodeModel> textNodes;
+  List<PageNodeModel> pageNodes = [];
+  List<TextNodeModel> textNodes = [];
+  List<ImageNodeModel> imageNodes = [];
+  List<NodeLinkModel> links = [];
 
-  MindMapModel(this.fileData, this.indexCount, this.pageNodes, this.textNodes);
+  MindMapModel(this.fileData);
 
   void save() {
     String data = jsonEncode(this);
-    writeFile(data, [fileData.username], fileData.fileName);
+    writeFile(data, [fileData.parentUser], fileData.fileName);
   }
 
-  PageNodeModel addPageNode(Offset offset, Size size) {
-    indexCount++;
-    var newPage = PageNodeModel(indexCount, size.width, size.height, offset.dx, offset.dy, "Untitled", []);
-    pageNodes.add(newPage);
+  BaseNodeModel addNewNode(Offset offset, Size size, eNodeType type) {
+    nodeIndexCount++;
+    BaseNodeModel newNode;
+    switch (type) {
+      case eNodeType.Page:
+        newNode = PageNodeModel(nodeIndexCount, size.width, size.height, offset.dx, offset.dy);
+        pageNodes.add(newNode);
+        break;
+      case eNodeType.Text:
+        newNode = TextNodeModel(nodeIndexCount, size.width, size.height, offset.dx, offset.dy);
+        textNodes.add(newNode);
+        break;
+      case eNodeType.Image:
+        newNode = ImageNodeModel(nodeIndexCount, size.width, size.height, offset.dx, offset.dy, "");
+        imageNodes.add(newNode);
+        break;
+    }
     save();
-    return newPage;
+    return newNode;
   }
 
-  TextNodeModel addTextNode(Offset offset, Size size) {
-    indexCount++;
-    var newText = TextNodeModel(indexCount, size.width, size.height, offset.dx, offset.dy);
-    textNodes.add(newText);
+  BaseNodeModel find(int id, eNodeType type) {
+    switch (type) {
+      case eNodeType.Page:
+        for (int i = 0; i < pageNodes.length; i++) {
+          if (pageNodes[i].id == id) return pageNodes[i];
+        }
+        break;
+      case eNodeType.Text:
+        for (int i = 0; i < textNodes.length; i++) {
+          if (textNodes[i].id == id) return textNodes[i];
+        }
+        break;
+      case eNodeType.Image:
+        for (int i = 0; i < imageNodes.length; i++) {
+          if (imageNodes[i].id == id) return imageNodes[i];
+        }
+        break;
+    }
+    return null;
+  }
+
+  void linkNodes(BaseNodeModel startNode, BaseNodeModel endNode) {
+    linkIndexCount++;
+    var newLink = NodeLinkModel(linkIndexCount, startNode.id, startNode.type, endNode.id, endNode.type);
+    links.add(newLink);
     save();
-    return newText;
+  }
+
+  void _removeLink(int linkId) {
+    for (int i = 0; i < links.length; i++) {
+      if (links[i].id == linkId) {
+        links.removeAt(i);
+        break;
+      }
+    }
+    save();
+  }
+
+  void deleteNode(BaseNodeModel node) {
+    switch (node.type) {
+      case eNodeType.Page:
+        pageNodes.remove(node);
+        break;
+      case eNodeType.Text:
+        textNodes.remove(node);
+        break;
+      case eNodeType.Image:
+        imageNodes.remove(node);
+        break;
+    }
+    save();
   }
 
   //region JSON
   factory MindMapModel.fromJson(Map<String, dynamic> json) => _$MindMapModelFromJson(json);
+
   Map<String, dynamic> toJson() => _$MindMapModelToJson(this);
 //endregion
 }

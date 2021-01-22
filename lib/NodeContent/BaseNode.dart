@@ -7,52 +7,43 @@ abstract class BaseNodeModel {
   double height;
   double dx;
   double dy;
+  int colour = 0xFF616161;
 
-  List<NodeLinkModel> links;
-
-  BaseNodeModel(this.id, this.title, this.width, this.height, this.dx, this.dy) {
-    links = [];
-  }
+  BaseNodeModel(this.id, this.title, this.width, this.height, this.dx, this.dy);
 
   Offset get getPosition {
     return Offset(dx - width / 2, dy - height / 2);
   }
+
+  eNodeType get type;
 
   void moveTo(Offset position) {
     dx = position.dx;
     dy = position.dy;
   }
 
-  void addConnection(NodeLinkModel connection) {
-    links.add(connection);
-  }
+  // void dispose(List<BaseNodeModel> nodeList) {
+  //   _links.forEach((element) {
+  //     element.dispose(nodeList);
+  //   });
+  // }
 
-  void removeConnection(NodeLinkModel connection) {
-    links.remove(connection);
-  }
+  void edit(BuildContext context, {void Function() onEndEdit});
 
-  void dispose(List<BaseNodeModel> nodeList) {
-    links.forEach((element) {
-      element.onDelete(nodeList);
-    });
-  }
-
-  void edit(BuildContext context);
+  Widget createNodeWidget(bool isSelected);
 }
 
 @JsonSerializable()
 class NodeLinkModel {
-  int startNodeId;
-  int endNodeId;
+  int id;
+  int startNode;
+  eNodeType startType;
+  int endNode;
+  eNodeType endType;
 
-  NodeLinkModel(this.startNodeId, this.endNodeId);
+  NodeLinkModel(this.id, this.startNode, this.startType, this.endNode, this.endType);
 
   factory NodeLinkModel.fromJson(Map<String, dynamic> json) => _$NodeLinkModelFromJson(json);
 
   Map<String, dynamic> toJson() => _$NodeLinkModelToJson(this);
-
-  void onDelete(List<BaseNodeModel> nodeList) {
-    nodeList[startNodeId].removeConnection(this);
-    nodeList[endNodeId].removeConnection(this);
-  }
 }

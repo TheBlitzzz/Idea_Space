@@ -13,8 +13,8 @@ class Editor extends StatefulWidget {
 
 class _EditorState extends State<Editor> {
   static const int _showNodeWidgetsFlag = 1, _showNodeToolsFlag = 2, _showTapMarkerFlag = 4, _showEditorToolsFlag = 8;
-  static const double _tapMarkerSize = 30;
-  static const Color _editorToolColour = Color(0xFFAAAAAA);
+  static const double _tapMarkerSize = 30, _resizeCornerSize = 15;
+  static const Color _markerColour = Color(0xFFAAAAAA);
 
   final TransformationController _viewerController = new TransformationController();
   final TextEditingController _textNodeEditingController = new TextEditingController();
@@ -26,12 +26,13 @@ class _EditorState extends State<Editor> {
 
   Offset _dragStartPos;
   Offset _nodeStartPos;
+  Size _nodeStartSize;
+  BaseNodeModel linkStart;
 
   int state = _showNodeWidgetsFlag;
 
   _EditorState(MindMapModel data) {
-    factory =
-        new _NodeFactory(data, _selectNode, nodeTranslationStart, nodeTranslate, (details, node, hor, ver) => null);
+    factory = new _NodeFactory(data, _selectNode, nodeTranslationStart, nodeTranslate);
   }
 
   @override
@@ -61,11 +62,13 @@ class _EditorState extends State<Editor> {
     List<Widget> widgetsOnViewer = [];
 
     //region Nodes and node editor tool
-    var nodeWidgets = factory._createNodeWidgets(selectedNodeIndex, _textNodeEditingController);
+    widgetsOnViewer.add(Stack(children: factory._drawNodeLinks()));
+    widgetsOnViewer.add(Stack(children: factory._createNodeWidgets(selectedNodeIndex)));
     if (factory.selectedNode != null) {
-      nodeWidgets.add(_createNodeTools());
+      var node = factory.selectedNode;
+      widgetsOnViewer.add(_createNodeTools(node));
+      widgetsOnViewer.add(_createResizeWidgets(node));
     }
-    widgetsOnViewer.add(Stack(children: nodeWidgets));
     //endregion
 
     //region Editor tap marker and add tools
@@ -83,7 +86,7 @@ class _EditorState extends State<Editor> {
       child: GestureDetector(
         child: Container(
           child: Stack(children: widgetsOnViewer),
-          color: Colors.grey[850],
+          color: _bgColour,
           height: 3580,
           width: 2480,
         ),
@@ -99,13 +102,12 @@ class _EditorState extends State<Editor> {
     );
   }
 
-  Widget _createNodeTools() {
-    var node = factory.selectedNode;
-    var position = node.getPosition + Offset(10, node.height);
+  Widget _createNodeTools(BaseNodeModel node) {
+    var position = node.getPosition + Offset(20, node.height);
     var actions = [
-      ToolAction(Icons.edit_outlined, () => debugPrint("Add")),
-      ToolAction(Icons.link, () => debugPrint("Link")),
-      ToolAction(Icons.delete, () => debugPrint("Delete")),
+      ToolAction(Icons.edit_outlined, () => _editNode(node)),
+      ToolAction(Icons.link, () => _startLinking(node)),
+      ToolAction(Icons.delete, () => _deleteNode(node)),
     ];
     return _NodeToolStack(position, actions);
   }
@@ -113,11 +115,11 @@ class _EditorState extends State<Editor> {
   Widget _createTapMarker() {
     return Positioned(
       child: Container(
-        decoration: BoxDecoration(shape: BoxShape.circle, color: _editorToolColour),
+        decoration: BoxDecoration(shape: BoxShape.circle, color: _markerColour),
         child: InkWell(onTap: _openAddTools),
-        width: _tapMarkerSize,
-        height: _tapMarkerSize,
       ),
+      width: _tapMarkerSize,
+      height: _tapMarkerSize,
       top: _lastTapPos.dy - _tapMarkerSize / 2,
       left: _lastTapPos.dx - _tapMarkerSize / 2,
     );
@@ -126,11 +128,54 @@ class _EditorState extends State<Editor> {
   Widget _createEditorTools() {
     var position = _lastTapPos + Offset(0, _tapMarkerSize / 2);
     var actions = [
-      ToolAction(Icons.add, _addNode),
+      ToolAction(Icons.add, _addPage),
       ToolAction(Icons.text_fields_outlined, _addText),
-      ToolAction(Icons.image_outlined, () => debugPrint("Image")),
+      ToolAction(Icons.image_outlined, _addImage),
     ];
     return _NodeToolStack(position, actions);
+  }
+
+  Widget _createResizeWidgets(BaseNodeModel node) {
+    var horizontalPositions = [0, 1, 0, 1];
+    var verticalPositions = [0, 0, 1, 1];
+    double cornerOffset = _resizeCornerSize - _outlineWidth;
+
+    List<Widget> corners = [];
+    for (int i = 0; i < 4; i++) {
+      int posX = horizontalPositions[i];
+      int posY = verticalPositions[i];
+
+      corners.add(Positioned(
+        child: _createResizeCorner(node, posX, posY),
+        left: (node.width - _outlineWidth) * posX,
+        top: (node.height - _outlineWidth) * posY,
+        width: _resizeCornerSize,
+        height: _resizeCornerSize,
+      ));
+    }
+
+    var position = node.getPosition - Offset(cornerOffset / 2, cornerOffset / 2);
+    return Positioned(
+      child: Stack(children: corners),
+      left: position.dx,
+      top: position.dy,
+      width: node.width + cornerOffset,
+      height: node.height + cornerOffset,
+    );
+  }
+
+  Widget _createResizeCorner(BaseNodeModel node, int horizontalDir, int verticalDir) {
+    return GestureDetector(
+      child: Container(
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: _defaultNodeColour,
+          border: Border.all(color: _markerColour, width: _outlineWidth),
+        ),
+      ),
+      onPanStart: (details) => _nodeResizeStart(details, node),
+      onPanUpdate: (details) => _nodeResize(details, node, horizontalDir, verticalDir),
+    );
   }
 
   //endregion
@@ -149,71 +194,90 @@ class _EditorState extends State<Editor> {
     });
   }
 
-  // void _setDragStart(Offset anchor) {
-  //   dragStartPos = anchor;
-  //   nodeStartSize = widget.node.size;
-  //   nodeStartPos = widget.node.position;
-  // }
-
-//   void _resize(Offset currentPos, int horizontalDir, int verticalDir) {
-//     setState(() {
-//       horizontalDir = horizontalDir * 2 - 1;
-//       verticalDir = verticalDir * 2 - 1;
-//       double dx = (horizontalDir * -dragStartPos.dx) + (horizontalDir * currentPos.dx);
-//       double dy = (verticalDir * -dragStartPos.dy) + (verticalDir * currentPos.dy);
-//       widget.node.size = Size((nodeStartSize.width + dx).abs(), (nodeStartSize.height + dy).abs());
-//       double offsetX = dx / 2 * horizontalDir;
-//       double offsetY = dy / 2 * verticalDir;
-//       widget.node.position = Offset(nodeStartPos.dx + offsetX, nodeStartPos.dy + offsetY);
-//     });
-//   }
-
   //region Select
   void _onViewerTap(TapUpDetails details) {
     setState(() {
       _setFlag(_showTapMarkerFlag, true);
       _lastTapPos = details.localPosition;
-      _selectNode(null);
+      _deselect();
+      linkStart = null;
     });
   }
 
   void _openAddTools() => _setFlag(_showEditorToolsFlag, true);
 
-  void _selectNode(int index) {
-    setState(() {
-      selectedNodeIndex = index;
-      if (index == null) {
-        // Deselect or clear select
-        _setFlag(_showNodeToolsFlag, false);
-        _setFlag(_showEditorToolsFlag, false);
-      } else {
-        // Stop drawing the tap marker.
+  void _selectNode(BaseNodeModel node) {
+    if (linkStart != null) {
+      factory.linkNodes(linkStart, node);
+      linkStart = null;
+      _deselect();
+    } else {
+      // Stop drawing the tap marker.
+      setState(() {
         _setFlag(_showNodeToolsFlag, true);
         _setFlag(_showTapMarkerFlag, false);
+      });
+
+      if (selectedNodeIndex == node.id) {
+        _editNode(node);
+      } else {
+        selectedNodeIndex = node.id;
       }
+    }
+  }
+
+  void _deselect() {
+    setState(() {
+      _setFlag(_showNodeToolsFlag, false);
+      _setFlag(_showEditorToolsFlag, false);
+      selectedNodeIndex = null;
     });
   }
 
   //endregion
 
   //region Add functions
-  void _addNode() {
-    factory.addPageNode(_lastTapPos);
+  void _addPage() {
+    factory.addNode(_lastTapPos, eNodeType.Page);
     setState(() => state = _showNodeWidgetsFlag);
   }
 
   void _addText() {
-    factory.addTextNode(_lastTapPos);
+    factory.addNode(_lastTapPos, eNodeType.Text);
     setState(() => state = _showNodeWidgetsFlag);
   }
 
   void _addImage() {
-    factory.addTextNode(_lastTapPos);
+    factory.addNode(_lastTapPos, eNodeType.Image);
     setState(() => state = _showNodeWidgetsFlag);
   }
 
   //endregion
+
   //region Node transformations
+  void _nodeResizeStart(DragStartDetails details, BaseNodeModel node) {
+    _dragStartPos = details.localPosition;
+    _nodeStartSize = Size(node.width, node.height);
+    _nodeStartPos = Offset(node.dx, node.dy);
+  }
+
+  void _nodeResize(DragUpdateDetails details, BaseNodeModel node, int horizontalDir, int verticalDir) {
+    Offset position = details.localPosition;
+    horizontalDir = horizontalDir * 2 - 1;
+    verticalDir = verticalDir * 2 - 1;
+    double dx = (horizontalDir * -_dragStartPos.dx) + (horizontalDir * position.dx);
+    double dy = (verticalDir * -_dragStartPos.dy) + (verticalDir * position.dy);
+    double offsetX = dx / 2 * horizontalDir;
+    double offsetY = dy / 2 * verticalDir;
+
+    setState(() {
+      node.width = (_nodeStartSize.width + dx).abs();
+      node.height = (_nodeStartSize.height + dy).abs();
+      node.moveTo(Offset(_nodeStartPos.dx + offsetX, _nodeStartPos.dy + offsetY));
+      widget.data.save();
+    });
+  }
+
   void nodeTranslationStart(DragStartDetails details, BaseNodeModel node) {
     _dragStartPos = details.localPosition;
     _nodeStartPos = Offset(node.dx, node.dy);
@@ -223,9 +287,28 @@ class _EditorState extends State<Editor> {
     setState(() {
       Offset dragVector = details.localPosition - _dragStartPos;
       node.moveTo(_nodeStartPos + dragVector);
+      widget.data.save();
     });
   }
+
+  //endregion
+
+  //region Node Tools
+  void _editNode(BaseNodeModel node) {
+    node.edit(context, onEndEdit: () => setState(() {}));
+  }
+
+  void _startLinking(BaseNodeModel node) {
+    linkStart = node;
+  }
+
+  void _deleteNode(BaseNodeModel node) {
+    debugPrint("Delete");
+    factory.deleteNode(node);
+    setState(() => state = _showNodeWidgetsFlag);
+  }
 //endregion
+
 //endregion
 }
 
