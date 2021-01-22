@@ -1,6 +1,7 @@
 library homepage;
 
 import 'dart:ui';
+import 'package:path/path.dart' as p;
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';

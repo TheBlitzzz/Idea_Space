@@ -26,3 +26,5 @@ const double _borderRadius = 10, _outlineWidth = 3;
 const Color _toolOutlineColour = Colors.blue;
 
 Color get _defaultNodeColour => Colors.grey[700];
+
+Color get _bgColour => Colors.grey[850];

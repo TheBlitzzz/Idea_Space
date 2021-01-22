@@ -9,11 +9,7 @@ abstract class BaseNodeModel {
   double dy;
   int colour = 0xFF616161;
 
-  List<NodeLinkModel> links;
-
-  BaseNodeModel(this.id, this.title, this.width, this.height, this.dx, this.dy) {
-    links = [];
-  }
+  BaseNodeModel(this.id, this.title, this.width, this.height, this.dx, this.dy);
 
   Offset get getPosition {
     return Offset(dx - width / 2, dy - height / 2);
@@ -24,20 +20,6 @@ abstract class BaseNodeModel {
   void moveTo(Offset position) {
     dx = position.dx;
     dy = position.dy;
-  }
-
-  void addConnection(NodeLinkModel connection) {
-    links.add(connection);
-  }
-
-  void removeConnection(int linkId) {
-    for (int i = 0; i < links.length; i++) {
-      if (links[i].id == linkId) {
-        links.remove(i);
-        return;
-      }
-    }
-    debugPrint("Link not found in node $id");
   }
 
   // void dispose(List<BaseNodeModel> nodeList) {
@@ -54,17 +36,14 @@ abstract class BaseNodeModel {
 @JsonSerializable()
 class NodeLinkModel {
   int id;
-  int startNodeId;
-  int endNodeId;
+  int startNode;
+  eNodeType startType;
+  int endNode;
+  eNodeType endType;
 
-  NodeLinkModel(this.id, this.startNodeId, this.endNodeId);
+  NodeLinkModel(this.id, this.startNode, this.startType, this.endNode, this.endType);
 
   factory NodeLinkModel.fromJson(Map<String, dynamic> json) => _$NodeLinkModelFromJson(json);
 
   Map<String, dynamic> toJson() => _$NodeLinkModelToJson(this);
-
-// void dispose(List<BaseNodeModel> nodeList) {
-//   nodeList[startNodeId].removeConnection(this);
-//   nodeList[endNodeId].removeConnection(this);
-// }
 }

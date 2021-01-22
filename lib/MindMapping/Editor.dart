@@ -27,6 +27,7 @@ class _EditorState extends State<Editor> {
   Offset _dragStartPos;
   Offset _nodeStartPos;
   Size _nodeStartSize;
+  BaseNodeModel linkStart;
 
   int state = _showNodeWidgetsFlag;
 
@@ -61,13 +62,13 @@ class _EditorState extends State<Editor> {
     List<Widget> widgetsOnViewer = [];
 
     //region Nodes and node editor tool
-    var nodeWidgets = factory._createNodeWidgets(selectedNodeIndex);
+    widgetsOnViewer.add(Stack(children: factory._drawNodeLinks()));
+    widgetsOnViewer.add(Stack(children: factory._createNodeWidgets(selectedNodeIndex)));
     if (factory.selectedNode != null) {
       var node = factory.selectedNode;
-      nodeWidgets.add(_createNodeTools(node));
-      nodeWidgets.add(_createResizeWidgets(node));
+      widgetsOnViewer.add(_createNodeTools(node));
+      widgetsOnViewer.add(_createResizeWidgets(node));
     }
-    widgetsOnViewer.add(Stack(children: nodeWidgets));
     //endregion
 
     //region Editor tap marker and add tools
@@ -85,7 +86,7 @@ class _EditorState extends State<Editor> {
       child: GestureDetector(
         child: Container(
           child: Stack(children: widgetsOnViewer),
-          color: Colors.grey[850],
+          color: _bgColour,
           height: 3580,
           width: 2480,
         ),
@@ -104,9 +105,9 @@ class _EditorState extends State<Editor> {
   Widget _createNodeTools(BaseNodeModel node) {
     var position = node.getPosition + Offset(20, node.height);
     var actions = [
-      ToolAction(Icons.edit_outlined, () => editNode(node)),
-      ToolAction(Icons.link, () => debugPrint("Link")),
-      ToolAction(Icons.delete, () => deleteNode(node)),
+      ToolAction(Icons.edit_outlined, () => _editNode(node)),
+      ToolAction(Icons.link, () => _startLinking(node)),
+      ToolAction(Icons.delete, () => _deleteNode(node)),
     ];
     return _NodeToolStack(position, actions);
   }
@@ -198,34 +199,39 @@ class _EditorState extends State<Editor> {
     setState(() {
       _setFlag(_showTapMarkerFlag, true);
       _lastTapPos = details.localPosition;
-      _selectNode(null);
+      _deselect();
+      linkStart = null;
     });
   }
 
   void _openAddTools() => _setFlag(_showEditorToolsFlag, true);
 
   void _selectNode(BaseNodeModel node) {
-    setState(() {
-      if (node == null) {
-        // Deselect or clear select
-        debugPrint("deselect");
-        _setFlag(_showNodeToolsFlag, false);
-        _setFlag(_showEditorToolsFlag, false);
-        selectedNodeIndex = null;
-        debugPrint(state.toString());
-      } else {
-        // Stop drawing the tap marker.
+    if (linkStart != null) {
+      factory.linkNodes(linkStart, node);
+      linkStart = null;
+      _deselect();
+    } else {
+      // Stop drawing the tap marker.
+      setState(() {
         _setFlag(_showNodeToolsFlag, true);
         _setFlag(_showTapMarkerFlag, false);
+      });
 
-        if (selectedNodeIndex == node.id) {
-          editNode(node);
-        } else {
-          selectedNodeIndex = node.id;
-        }
+      if (selectedNodeIndex == node.id) {
+        _editNode(node);
+      } else {
+        selectedNodeIndex = node.id;
       }
+    }
+  }
+
+  void _deselect() {
+    setState(() {
+      _setFlag(_showNodeToolsFlag, false);
+      _setFlag(_showEditorToolsFlag, false);
+      selectedNodeIndex = null;
     });
-    debugPrint(state.toString());
   }
 
   //endregion
@@ -285,21 +291,24 @@ class _EditorState extends State<Editor> {
     });
   }
 
-//endregion
+  //endregion
 
   //region Node Tools
-  void editNode(BaseNodeModel node) {
+  void _editNode(BaseNodeModel node) {
     node.edit(context, onEndEdit: () => setState(() {}));
   }
 
-  void linkNodes() {}
+  void _startLinking(BaseNodeModel node) {
+    linkStart = node;
+  }
 
-  void deleteNode(BaseNodeModel node) {
+  void _deleteNode(BaseNodeModel node) {
     debugPrint("Delete");
     factory.deleteNode(node);
     setState(() => state = _showNodeWidgetsFlag);
   }
 //endregion
+
 //endregion
 }
 

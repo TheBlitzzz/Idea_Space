@@ -3,7 +3,7 @@ part of io_handler;
 @JsonSerializable()
 class MindMapFileModel {
   String title;
-  String username;
+  String parentUser;
   DateTime lastEditTime;
   bool isBookMarked = false;
 
@@ -18,7 +18,7 @@ class MindMapFileModel {
 
   String get fileName => title + ".txt";
 
-  MindMapFileModel(this.title, this.username, this.lastEditTime);
+  MindMapFileModel(this.title, this.parentUser, this.lastEditTime);
 
   void updateLastEdit() => lastEditTime = DateTime.now();
 

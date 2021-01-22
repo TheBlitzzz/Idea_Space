@@ -15,6 +15,8 @@ part 'Editor.dart';
 
 part 'NodeFactory.dart';
 
+part 'LinkDrawer.dart';
+
 part 'ToolWidgets.dart';
 
 part 'MindMapModel.dart';
@@ -26,5 +28,7 @@ const _animDuration = Duration(milliseconds: 100);
 const Color _toolOutlineColour = Colors.blue;
 
 Color get _defaultNodeColour => Colors.grey[700];
+
+Color get _bgColour => Colors.grey[850];
 
 const Size _defaultNodeSize = Size(120, 40);

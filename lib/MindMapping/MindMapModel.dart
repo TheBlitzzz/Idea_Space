@@ -16,7 +16,7 @@ class MindMapModel {
 
   void save() {
     String data = jsonEncode(this);
-    writeFile(data, [fileData.username], fileData.fileName);
+    writeFile(data, [fileData.parentUser], fileData.fileName);
   }
 
   BaseNodeModel addNewNode(Offset offset, Size size, eNodeType type) {
@@ -40,59 +40,56 @@ class MindMapModel {
     return newNode;
   }
 
+  BaseNodeModel find(int id, eNodeType type) {
+    switch (type) {
+      case eNodeType.Page:
+        for (int i = 0; i < pageNodes.length; i++) {
+          if (pageNodes[i].id == id) return pageNodes[i];
+        }
+        break;
+      case eNodeType.Text:
+        for (int i = 0; i < textNodes.length; i++) {
+          if (textNodes[i].id == id) return textNodes[i];
+        }
+        break;
+      case eNodeType.Image:
+        for (int i = 0; i < imageNodes.length; i++) {
+          if (imageNodes[i].id == id) return imageNodes[i];
+        }
+        break;
+    }
+    return null;
+  }
+
   void linkNodes(BaseNodeModel startNode, BaseNodeModel endNode) {
     linkIndexCount++;
-    var newLink = NodeLinkModel(linkIndexCount, startNode.id, endNode.id);
-    startNode.addConnection(newLink);
-    endNode.addConnection(newLink);
+    var newLink = NodeLinkModel(linkIndexCount, startNode.id, startNode.type, endNode.id, endNode.type);
     links.add(newLink);
+    save();
+  }
+
+  void _removeLink(int linkId) {
+    for (int i = 0; i < links.length; i++) {
+      if (links[i].id == linkId) {
+        links.removeAt(i);
+        break;
+      }
+    }
     save();
   }
 
   void deleteNode(BaseNodeModel node) {
     switch (node.type) {
       case eNodeType.Page:
-        for (int i = 0; i < pageNodes.length; i++) {
-          if (pageNodes[i].id == node.id) pageNodes.removeAt(i);
-        }
+        pageNodes.remove(node);
         break;
       case eNodeType.Text:
-        for (int i = 0; i < textNodes.length; i++) {
-          if (textNodes[i].id == node.id) textNodes.removeAt(i);
-        }
+        textNodes.remove(node);
         break;
       case eNodeType.Image:
-        for (int i = 0; i < imageNodes.length; i++) {
-          if (imageNodes[i].id == node.id) imageNodes.removeAt(i);
-        }
+        imageNodes.remove(node);
         break;
     }
-
-    var links = node.links;
-    links.forEach((link) {
-      int otherNodeId;
-      if (node.id == link.startNodeId) {
-        otherNodeId = link.endNodeId;
-      } else {
-        otherNodeId = link.startNodeId;
-      }
-
-      for (int i = 0; i < pageNodes.length; i++) {
-        if (pageNodes[i].id == otherNodeId) {
-          pageNodes[i].removeConnection(link.id);
-        }
-      }
-      for (int i = 0; i < textNodes.length; i++) {
-        if (textNodes[i].id == otherNodeId) {
-          textNodes[i].removeConnection(link.id);
-        }
-      }
-      for (int i = 0; i < imageNodes.length; i++) {
-        if (imageNodes[i].id == otherNodeId) {
-          imageNodes[i].removeConnection(link.id);
-        }
-      }
-    });
     save();
   }
 

@@ -88,7 +88,7 @@ class TextNodeModel extends BaseNodeModel {
       child: Text(title, softWrap: true, overflow: TextOverflow.ellipsis),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(_borderRadius),
-        color: isSelected ? Color(colour) : null,
+        color: isSelected ? Color(colour) : _bgColour,
         border: isSelected ? Border.all(width: _outlineWidth, color: _toolOutlineColour) : null,
       ),
       alignment: Alignment.center,

@@ -2,8 +2,9 @@ part of homepage;
 
 class Homepage extends StatefulWidget {
   final UserModel user;
+  final UserManager userManager;
 
-  Homepage(this.user);
+  Homepage(this.user, this.userManager);
 
   @override
   _HomepageState createState() => _HomepageState();
@@ -30,10 +31,7 @@ class _HomepageState extends State<Homepage> {
 
     return Scaffold(
       backgroundColor: Colors.grey[900],
-      appBar: AppBar(
-        title: Text("${widget.user.username}'s Space"),
-        leading: Icon(Icons.account_circle_rounded),
-      ),
+      appBar: AppBar(title: Text("${widget.user.username}'s Space")),
       body: Center(
         child: Stack(
           fit: StackFit.expand,

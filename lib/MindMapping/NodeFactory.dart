@@ -1,56 +1,52 @@
 part of mind_map;
 
 class _NodeFactory {
-  final Size defaultSize;
   final MindMapModel data;
   final Function(BaseNodeModel) selectFunc;
   final Function(DragStartDetails, BaseNodeModel) nodeTranslationStart;
   final Function(DragUpdateDetails, BaseNodeModel) nodeTranslation;
 
   BaseNodeModel selectedNode;
-  List<BaseNodeModel> nodes;
+  List<LinkedNode> linkedNodes;
 
-  _NodeFactory(this.data, this.selectFunc, this.nodeTranslationStart, this.nodeTranslation,
-      {this.defaultSize = const Size(120, 40)}) {
-    nodes = [];
-    nodes.addAll(data.pageNodes);
-    nodes.addAll(data.textNodes);
-    nodes.addAll(data.imageNodes);
+  _NodeFactory(
+    this.data,
+    this.selectFunc,
+    this.nodeTranslationStart,
+    this.nodeTranslation,
+  );
+
+  void addNode(Offset offset, eNodeType type) => data.addNewNode(offset, _defaultNodeSize, type);
+
+  void linkNodes(BaseNodeModel startNode, BaseNodeModel endNode) {
+    linkedNodes = null;
+    data.linkNodes(startNode, endNode);
   }
-
-  void addNode(Offset offset, eNodeType type) => nodes.add(data.addNewNode(offset, defaultSize, type));
-
-  // void addTextNode(Offset offset) => data.addTextNode(offset, defaultSize);
-
-  void linkNodes(BaseNodeModel startNode, BaseNodeModel endNode) => data.linkNodes(startNode, endNode);
 
   void deleteNode(BaseNodeModel node) {
     if (node == null) return;
 
-    nodes.removeAt(_findNodeIndexInList(node.id));
-
-    // //region Removing the link references in the linked nodes
-    // var links = node.links;
-    // links.forEach((link) {
-    //   var linkedNodeId;
-    //   if (link.startNodeId == node.id) {
-    //     linkedNodeId = link.endNodeId;
-    //   } else {
-    //     linkedNodeId = link.startNodeId;
-    //   }
-    //   nodes[_findNodeIndexInList(linkedNodeId)].removeConnection(link.id);
-    // });
-    //endregion
-
+    linkedNodes = null;
     data.deleteNode(node);
+
+    var links = data.links;
+    List<int> linksToRemove = [];
+    for (int i = 0; i < links.length; i++) {
+      var link = links[i];
+      if (link.startNode == node.id || link.endNode == node.id) linksToRemove.add(link.id);
+    }
+    linksToRemove.forEach((linkId) => data._removeLink(linkId));
+    // try remove in while loop and don't increment when removing
   }
 
-  int _findNodeIndexInList(int nodeId) {
-    if (nodeId == null) return null;
-    for (int i = 0; i < nodes.length; i++) {
-      if (nodes[i].id == nodeId) return i;
-    }
-    return null;
+  void _findLinkedNodes() {
+    linkedNodes = [];
+    data.links.forEach((link) {
+      BaseNodeModel start = data.find(link.startNode, link.startType);
+      BaseNodeModel end = data.find(link.endNode, link.endType);
+
+      linkedNodes.add(LinkedNode(start, end));
+    });
   }
 
   //region Widgets
@@ -58,29 +54,35 @@ class _NodeFactory {
     List<Widget> children = [];
 
     selectedNode = null;
-    nodes.forEach((element) {
+    data.pageNodes.forEach((element) {
       bool isSelected = false;
       if (selectedIndex != null) {
         isSelected = selectedIndex == element.id;
         if (isSelected == true) selectedNode = element;
       }
-      children.add(_wrapNodeWidget(element, isSelected, eNodeType.Page));
+      children.add(_wrapNodeWidget(element, isSelected));
     });
-    // data.textNodes.forEach((element) {
-    //   bool isSelected = false;
-    //   if (selectedIndex != null) {
-    //     isSelected = selectedIndex == element.id;
-    //     if (isSelected == true) {
-    //       selectedNode = element;
-    //     }
-    //   }
-    //   children.add(_wrapNodeWidget(element, isSelected, eNodeType.Text));
-    // });
+    data.textNodes.forEach((element) {
+      bool isSelected = false;
+      if (selectedIndex != null) {
+        isSelected = selectedIndex == element.id;
+        if (isSelected == true) selectedNode = element;
+      }
+      children.add(_wrapNodeWidget(element, isSelected));
+    });
+    data.imageNodes.forEach((element) {
+      bool isSelected = false;
+      if (selectedIndex != null) {
+        isSelected = selectedIndex == element.id;
+        if (isSelected == true) selectedNode = element;
+      }
+      children.add(_wrapNodeWidget(element, isSelected));
+    });
 
     return children;
   }
 
-  Widget _wrapNodeWidget(BaseNodeModel node, bool isSelected, eNodeType type) {
+  Widget _wrapNodeWidget(BaseNodeModel node, bool isSelected) {
     Offset position = node.getPosition;
     Widget child = node.createNodeWidget(isSelected);
 
@@ -97,6 +99,25 @@ class _NodeFactory {
       height: node.height,
     );
   }
+
+  List<Widget> _drawNodeLinks() {
+    if (linkedNodes == null) {
+      _findLinkedNodes();
+    }
+
+    List<Widget> linkWidgets = [];
+    linkedNodes.forEach((link) {
+      linkWidgets.add(_drawLink(link));
+    });
+
+    return linkWidgets;
+  }
+
+  Widget _drawLink(LinkedNode link) {
+    return CustomPaint(
+      painter: LinkPainter(Offset(link.start.dx, link.start.dy), Offset(link.end.dx, link.end.dy)),
+    );
+  }
 //endregion
 }
 
@@ -104,4 +125,11 @@ enum eNodeType {
   Page,
   Text,
   Image,
+}
+
+class LinkedNode {
+  BaseNodeModel start;
+  BaseNodeModel end;
+
+  LinkedNode(this.start, this.end);
 }
