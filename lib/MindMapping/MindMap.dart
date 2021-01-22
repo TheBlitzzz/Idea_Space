@@ -21,6 +21,10 @@ part 'MindMapModel.dart';
 
 part 'MindMap.g.dart';
 
-const double _borderRadius = 10, _buttonSize = 30;
+const double _borderRadius = 10, _buttonSize = 30, _outlineWidth = 3;
 const _animDuration = Duration(milliseconds: 100);
 const Color _toolOutlineColour = Colors.blue;
+
+Color get _defaultNodeColour => Colors.grey[700];
+
+const Size _defaultNodeSize = Size(120, 40);

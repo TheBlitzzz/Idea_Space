@@ -7,6 +7,7 @@ abstract class BaseNodeModel {
   double height;
   double dx;
   double dy;
+  int colour = 0xFF616161;
 
   List<NodeLinkModel> links;
 
@@ -27,32 +28,41 @@ abstract class BaseNodeModel {
     links.add(connection);
   }
 
-  void removeConnection(NodeLinkModel connection) {
-    links.remove(connection);
+  void removeConnection(int linkId) {
+    for (int i = 0; i < links.length; i++) {
+      if (links[i].id == linkId) {
+        links.remove(i);
+        return;
+      }
+    }
+    debugPrint("Link not found in node $id");
   }
 
-  void dispose(List<BaseNodeModel> nodeList) {
-    links.forEach((element) {
-      element.onDelete(nodeList);
-    });
-  }
+  // void dispose(List<BaseNodeModel> nodeList) {
+  //   _links.forEach((element) {
+  //     element.dispose(nodeList);
+  //   });
+  // }
 
-  void edit(BuildContext context);
+  void edit(BuildContext context, {void Function() onEndEdit});
+
+  Widget createNodeWidget(bool isSelected);
 }
 
 @JsonSerializable()
 class NodeLinkModel {
+  int id;
   int startNodeId;
   int endNodeId;
 
-  NodeLinkModel(this.startNodeId, this.endNodeId);
+  NodeLinkModel(this.id, this.startNodeId, this.endNodeId);
 
   factory NodeLinkModel.fromJson(Map<String, dynamic> json) => _$NodeLinkModelFromJson(json);
 
   Map<String, dynamic> toJson() => _$NodeLinkModelToJson(this);
 
-  void onDelete(List<BaseNodeModel> nodeList) {
-    nodeList[startNodeId].removeConnection(this);
-    nodeList[endNodeId].removeConnection(this);
-  }
+// void dispose(List<BaseNodeModel> nodeList) {
+//   nodeList[startNodeId].removeConnection(this);
+//   nodeList[endNodeId].removeConnection(this);
+// }
 }

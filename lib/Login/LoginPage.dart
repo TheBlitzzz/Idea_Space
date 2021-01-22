@@ -241,6 +241,7 @@ class _LoginState extends State<Login> {
   void _navigateToHomepage() {
     Navigator.of(context).push(MaterialPageRoute(builder: (context) => Homepage(thisUser)));
     setState(() {
+      isSignUp = false;
       _usernameController.text = "";
       _passwordController.text = "";
       _confirmPasswordController.text = "";

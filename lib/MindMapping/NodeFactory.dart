@@ -1,29 +1,64 @@
 part of mind_map;
 
-const double _outlineWidth = 3;
-
 class _NodeFactory {
   final Size defaultSize;
   final MindMapModel data;
-  final Function(int) selectFunc;
+  final Function(BaseNodeModel) selectFunc;
   final Function(DragStartDetails, BaseNodeModel) nodeTranslationStart;
   final Function(DragUpdateDetails, BaseNodeModel) nodeTranslation;
-  final Function(DragUpdateDetails, BaseNodeModel, bool, bool) resizeFunc;
 
   BaseNodeModel selectedNode;
+  List<BaseNodeModel> nodes;
 
-  _NodeFactory(this.data, this.selectFunc, this.nodeTranslationStart, this.nodeTranslation, this.resizeFunc,
-      {this.defaultSize = const Size(120, 40)});
+  _NodeFactory(this.data, this.selectFunc, this.nodeTranslationStart, this.nodeTranslation,
+      {this.defaultSize = const Size(120, 40)}) {
+    nodes = [];
+    nodes.addAll(data.pageNodes);
+    nodes.addAll(data.textNodes);
+    nodes.addAll(data.imageNodes);
+  }
 
-  void addPageNode(Offset offset) => data.addPageNode(offset, defaultSize);
+  void addNode(Offset offset, eNodeType type) => nodes.add(data.addNewNode(offset, defaultSize, type));
 
-  void addTextNode(Offset offset) => data.addTextNode(offset, defaultSize);
+  // void addTextNode(Offset offset) => data.addTextNode(offset, defaultSize);
 
-  List<Widget> _createNodeWidgets(int selectedIndex, TextEditingController controller) {
+  void linkNodes(BaseNodeModel startNode, BaseNodeModel endNode) => data.linkNodes(startNode, endNode);
+
+  void deleteNode(BaseNodeModel node) {
+    if (node == null) return;
+
+    nodes.remove(_findNodeIndexInList(node.id));
+
+    //region Removing the link references in the linked nodes
+    var links = node.links;
+    links.forEach((link) {
+      var linkedNodeId;
+      if (link.startNodeId == node.id) {
+        linkedNodeId = link.endNodeId;
+      } else {
+        linkedNodeId = link.startNodeId;
+      }
+      nodes[_findNodeIndexInList(linkedNodeId)].removeConnection(link.id);
+    });
+    //endregion
+
+    data.save();
+  }
+
+  int _findNodeIndexInList(int nodeId) {
+    if (nodeId == null) return null;
+    for (int i = 0; i < nodes.length; i++) {
+      if (nodes[i].id == nodeId) return i;
+    }
+    return null;
+  }
+
+  //region Widgets
+  List<Widget> _createNodeWidgets(int selectedIndex) {
     List<Widget> children = [];
 
     selectedNode = null;
-    data.pageNodes.forEach((element) {
+    nodes.forEach((element) {
       bool isSelected = false;
       if (selectedIndex != null) {
         isSelected = selectedIndex == element.id;
@@ -31,39 +66,28 @@ class _NodeFactory {
       }
       children.add(_wrapNodeWidget(element, isSelected, eNodeType.Page));
     });
-    data.textNodes.forEach((element) {
-      bool isSelected = false;
-      if (selectedIndex != null) {
-        isSelected = selectedIndex == element.id;
-        if (isSelected == true) {
-          selectedNode = element;
-        }
-      }
-      children.add(_wrapNodeWidget(element, isSelected, eNodeType.Text));
-    });
+    // data.textNodes.forEach((element) {
+    //   bool isSelected = false;
+    //   if (selectedIndex != null) {
+    //     isSelected = selectedIndex == element.id;
+    //     if (isSelected == true) {
+    //       selectedNode = element;
+    //     }
+    //   }
+    //   children.add(_wrapNodeWidget(element, isSelected, eNodeType.Text));
+    // });
 
     return children;
   }
 
   Widget _wrapNodeWidget(BaseNodeModel node, bool isSelected, eNodeType type) {
     Offset position = node.getPosition;
-    Widget child;
-    switch (type) {
-      case eNodeType.Page:
-        child = _createPageNode(node.title, isSelected);
-        break;
-      case eNodeType.Text:
-        child = _createTextNode(node.title, isSelected);
-        break;
-      case eNodeType.Image:
-        // TODO: Handle this case.
-        break;
-    }
+    Widget child = node.createNodeWidget(isSelected);
 
     return Positioned(
       child: GestureDetector(
         child: child,
-        onTap: () => selectFunc(node.id),
+        onTapUp: (details) => selectFunc(node),
         onPanUpdate: (details) => nodeTranslation(details, node),
         onPanStart: (details) => nodeTranslationStart(details, node),
       ),
@@ -73,29 +97,7 @@ class _NodeFactory {
       height: node.height,
     );
   }
-
-  Widget _createPageNode(String title, bool isSelected) {
-    return Container(
-      child: Text(title).align(Alignment.center),
-      decoration: BoxDecoration(
-        color: Colors.grey[700],
-        borderRadius: BorderRadius.all(Radius.circular(_borderRadius)),
-        border: isSelected ? Border.all(width: _outlineWidth, color: _toolOutlineColour) : null,
-      ),
-    );
-  }
-
-  Widget _createTextNode(String title, bool isSelected) {
-    return Container(
-      child: Text(title, softWrap: true, overflow: TextOverflow.ellipsis),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(_borderRadius),
-        color: isSelected ? Colors.grey[600] : null,
-        border: isSelected ? Border.all(width: _outlineWidth, color: _toolOutlineColour) : null,
-      ),
-      alignment: Alignment.center,
-    );
-  }
+//endregion
 }
 
 enum eNodeType {

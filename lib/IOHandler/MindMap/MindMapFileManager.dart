@@ -88,7 +88,7 @@ class MindMapFileManager {
 
   void addNewMindMap(MindMapFileModel model) {
     _data.allMindMaps.add(model);
-    var newMindMapModel = MindMapModel(model, 0, [], []);
+    var newMindMapModel = MindMapModel(model);
     writeFile(jsonEncode(newMindMapModel), [username], model.fileName);
     _updateFileLists();
     save();

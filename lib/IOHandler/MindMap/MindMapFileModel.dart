@@ -5,7 +5,7 @@ class MindMapFileModel {
   String title;
   String username;
   DateTime lastEditTime;
-  bool isBookMarked;
+  bool isBookMarked = false;
 
   String get getLastEditTime {
     String year = lastEditTime.year.toString();
@@ -18,7 +18,7 @@ class MindMapFileModel {
 
   String get fileName => title + ".txt";
 
-  MindMapFileModel(this.title, this.username, this.lastEditTime, {this.isBookMarked = false});
+  MindMapFileModel(this.title, this.username, this.lastEditTime);
 
   void updateLastEdit() => lastEditTime = DateTime.now();
 

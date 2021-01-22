@@ -4,36 +4,61 @@ part of mind_map;
 class MindMapModel {
   MindMapFileModel fileData;
 
-  int indexCount;
+  int nodeIndexCount = 0;
+  int linkIndexCount = 0;
 
-  List<PageNodeModel> pageNodes;
-  List<TextNodeModel> textNodes;
+  List<PageNodeModel> pageNodes = [];
+  List<TextNodeModel> textNodes = [];
+  List<ImageNodeModel> imageNodes = [];
+  List<NodeLinkModel> links = [];
 
-  MindMapModel(this.fileData, this.indexCount, this.pageNodes, this.textNodes);
+  MindMapModel(this.fileData);
 
   void save() {
     String data = jsonEncode(this);
     writeFile(data, [fileData.username], fileData.fileName);
   }
 
-  PageNodeModel addPageNode(Offset offset, Size size) {
-    indexCount++;
-    var newPage = PageNodeModel(indexCount, size.width, size.height, offset.dx, offset.dy, "Untitled", []);
-    pageNodes.add(newPage);
+  BaseNodeModel addNewNode(Offset offset, Size size, eNodeType type) {
+    nodeIndexCount++;
+    BaseNodeModel newNode;
+    switch (type) {
+      case eNodeType.Page:
+        newNode = PageNodeModel(nodeIndexCount, size.width, size.height, offset.dx, offset.dy);
+        pageNodes.add(newNode);
+        break;
+      case eNodeType.Text:
+        newNode = TextNodeModel(nodeIndexCount, size.width, size.height, offset.dx, offset.dy);
+        textNodes.add(newNode);
+        break;
+      case eNodeType.Image:
+        newNode = ImageNodeModel(nodeIndexCount, size.width, size.height, offset.dx, offset.dy, "");
+        imageNodes.add(newNode);
+        break;
+    }
     save();
-    return newPage;
+    return newNode;
   }
 
-  TextNodeModel addTextNode(Offset offset, Size size) {
-    indexCount++;
-    var newText = TextNodeModel(indexCount, size.width, size.height, offset.dx, offset.dy);
-    textNodes.add(newText);
+  // TextNodeModel addTextNode(Offset offset, Size size) {
+  //   nodeIndexCount++;
+  //   var newText = TextNodeModel(nodeIndexCount, size.width, size.height, offset.dx, offset.dy);
+  //   textNodes.add(newText);
+  //   save();
+  //   return newText;
+  // }
+  void linkNodes(BaseNodeModel startNode, BaseNodeModel endNode) {
+    linkIndexCount++;
+    var newLink = NodeLinkModel(linkIndexCount, startNode.id, endNode.id);
+    startNode.addConnection(newLink);
+    endNode.addConnection(newLink);
+    links.add(newLink);
     save();
-    return newText;
   }
 
   //region JSON
   factory MindMapModel.fromJson(Map<String, dynamic> json) => _$MindMapModelFromJson(json);
+
   Map<String, dynamic> toJson() => _$MindMapModelToJson(this);
 //endregion
 }

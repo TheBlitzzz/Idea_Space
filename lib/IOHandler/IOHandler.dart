@@ -38,7 +38,7 @@ Future<String> readFileAsString(List<String> fileDir, String fileName) async {
     return await File(filePath).readAsString();
   }
 
-  debugPrint("No file found");
+  debugPrint("No file found at $filePath");
   return null;
 }
 
