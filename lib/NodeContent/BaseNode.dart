@@ -19,6 +19,8 @@ abstract class BaseNodeModel {
     return Offset(dx - width / 2, dy - height / 2);
   }
 
+  eNodeType get type;
+
   void moveTo(Offset position) {
     dx = position.dx;
     dy = position.dy;

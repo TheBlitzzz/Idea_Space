@@ -27,22 +27,22 @@ class _NodeFactory {
   void deleteNode(BaseNodeModel node) {
     if (node == null) return;
 
-    nodes.remove(_findNodeIndexInList(node.id));
+    nodes.removeAt(_findNodeIndexInList(node.id));
 
-    //region Removing the link references in the linked nodes
-    var links = node.links;
-    links.forEach((link) {
-      var linkedNodeId;
-      if (link.startNodeId == node.id) {
-        linkedNodeId = link.endNodeId;
-      } else {
-        linkedNodeId = link.startNodeId;
-      }
-      nodes[_findNodeIndexInList(linkedNodeId)].removeConnection(link.id);
-    });
+    // //region Removing the link references in the linked nodes
+    // var links = node.links;
+    // links.forEach((link) {
+    //   var linkedNodeId;
+    //   if (link.startNodeId == node.id) {
+    //     linkedNodeId = link.endNodeId;
+    //   } else {
+    //     linkedNodeId = link.startNodeId;
+    //   }
+    //   nodes[_findNodeIndexInList(linkedNodeId)].removeConnection(link.id);
+    // });
     //endregion
 
-    data.save();
+    data.deleteNode(node);
   }
 
   int _findNodeIndexInList(int nodeId) {

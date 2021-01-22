@@ -5,6 +5,9 @@ class PageNodeModel extends BaseNodeModel {
   String nodeTitle = "Untitled";
   List<String> textBlocks = [];
 
+  @override
+  eNodeType get type => eNodeType.Page;
+
   PageNodeModel(int id, double width, double height, double dx, double dy)
       : super(id, "Page #$id", width, height, dx, dy);
 
@@ -37,6 +40,9 @@ class PageNodeModel extends BaseNodeModel {
 
 @JsonSerializable()
 class TextNodeModel extends BaseNodeModel {
+  @override
+  eNodeType get type => eNodeType.Text;
+
   TextNodeModel(int id, double width, double height, double dx, double dy)
       : super(id, "Text #$id", width, height, dx, dy);
 
@@ -99,6 +105,9 @@ class TextNodeModel extends BaseNodeModel {
 @JsonSerializable()
 class ImageNodeModel extends BaseNodeModel {
   String imageInBase64;
+
+  @override
+  eNodeType get type => eNodeType.Image;
 
   ImageNodeModel(int id, double width, double height, double dx, double dy, this.imageInBase64)
       : super(id, "Image #$id", width, height, dx, dy);

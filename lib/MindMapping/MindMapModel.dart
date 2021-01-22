@@ -40,19 +40,59 @@ class MindMapModel {
     return newNode;
   }
 
-  // TextNodeModel addTextNode(Offset offset, Size size) {
-  //   nodeIndexCount++;
-  //   var newText = TextNodeModel(nodeIndexCount, size.width, size.height, offset.dx, offset.dy);
-  //   textNodes.add(newText);
-  //   save();
-  //   return newText;
-  // }
   void linkNodes(BaseNodeModel startNode, BaseNodeModel endNode) {
     linkIndexCount++;
     var newLink = NodeLinkModel(linkIndexCount, startNode.id, endNode.id);
     startNode.addConnection(newLink);
     endNode.addConnection(newLink);
     links.add(newLink);
+    save();
+  }
+
+  void deleteNode(BaseNodeModel node) {
+    switch (node.type) {
+      case eNodeType.Page:
+        for (int i = 0; i < pageNodes.length; i++) {
+          if (pageNodes[i].id == node.id) pageNodes.removeAt(i);
+        }
+        break;
+      case eNodeType.Text:
+        for (int i = 0; i < textNodes.length; i++) {
+          if (textNodes[i].id == node.id) textNodes.removeAt(i);
+        }
+        break;
+      case eNodeType.Image:
+        for (int i = 0; i < imageNodes.length; i++) {
+          if (imageNodes[i].id == node.id) imageNodes.removeAt(i);
+        }
+        break;
+    }
+
+    var links = node.links;
+    links.forEach((link) {
+      int otherNodeId;
+      if (node.id == link.startNodeId) {
+        otherNodeId = link.endNodeId;
+      } else {
+        otherNodeId = link.startNodeId;
+      }
+
+      for (int i = 0; i < pageNodes.length; i++) {
+        if (pageNodes[i].id == otherNodeId) {
+          pageNodes[i].removeConnection(link.id);
+        }
+      }
+      for (int i = 0; i < textNodes.length; i++) {
+        if (textNodes[i].id == otherNodeId) {
+          textNodes[i].removeConnection(link.id);
+        }
+      }
+      for (int i = 0; i < imageNodes.length; i++) {
+        if (imageNodes[i].id == otherNodeId) {
+          imageNodes[i].removeConnection(link.id);
+        }
+      }
+    });
     save();
   }
 

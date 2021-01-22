@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:idea_space/CustomWidgets/CustomWidgets.dart';
+import 'package:idea_space/MindMapping/MindMap.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:idea_space/zExtensions/WidgetTransforms.dart';

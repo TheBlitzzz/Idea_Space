@@ -297,6 +297,7 @@ class _EditorState extends State<Editor> {
   void deleteNode(BaseNodeModel node) {
     debugPrint("Delete");
     factory.deleteNode(node);
+    setState(() => state = _showNodeWidgetsFlag);
   }
 //endregion
 //endregion
