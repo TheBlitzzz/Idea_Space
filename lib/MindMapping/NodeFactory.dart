@@ -1,7 +1,7 @@
 part of mind_map;
 
 class _NodeFactory {
-  final MindMapModel data;
+  final MindMapModel _data;
   final Function(BaseNodeModel) selectFunc;
   final Function(DragStartDetails, BaseNodeModel) nodeTranslationStart;
   final Function(DragUpdateDetails, BaseNodeModel) nodeTranslation;
@@ -9,41 +9,36 @@ class _NodeFactory {
   BaseNodeModel selectedNode;
   List<LinkedNode> linkedNodes;
 
-  _NodeFactory(
-    this.data,
-    this.selectFunc,
-    this.nodeTranslationStart,
-    this.nodeTranslation,
-  );
+  _NodeFactory(this._data, this.selectFunc, this.nodeTranslationStart, this.nodeTranslation);
 
-  void addNode(Offset offset, eNodeType type) => data.addNewNode(offset, _defaultNodeSize, type);
+  void addNode(Offset offset, eNodeType type) => _data.addNewNode(offset, _defaultNodeSize, type);
 
   void linkNodes(BaseNodeModel startNode, BaseNodeModel endNode) {
     linkedNodes = null;
-    data.linkNodes(startNode, endNode);
+    _data.linkNodes(startNode, endNode);
   }
 
   void deleteNode(BaseNodeModel node) {
     if (node == null) return;
 
     linkedNodes = null;
-    data.deleteNode(node);
+    _data.deleteNode(node);
 
-    var links = data.links;
+    var links = _data.links;
     List<int> linksToRemove = [];
     for (int i = 0; i < links.length; i++) {
       var link = links[i];
       if (link.startNode == node.id || link.endNode == node.id) linksToRemove.add(link.id);
     }
-    linksToRemove.forEach((linkId) => data._removeLink(linkId));
+    linksToRemove.forEach((linkId) => _data._removeLink(linkId));
     // try remove in while loop and don't increment when removing
   }
 
   void _findLinkedNodes() {
     linkedNodes = [];
-    data.links.forEach((link) {
-      BaseNodeModel start = data.find(link.startNode, link.startType);
-      BaseNodeModel end = data.find(link.endNode, link.endType);
+    _data.links.forEach((link) {
+      BaseNodeModel start = _data.find(link.startNode, link.startType);
+      BaseNodeModel end = _data.find(link.endNode, link.endType);
 
       linkedNodes.add(LinkedNode(start, end));
     });
@@ -54,7 +49,7 @@ class _NodeFactory {
     List<Widget> children = [];
 
     selectedNode = null;
-    data.pageNodes.forEach((element) {
+    _data.pageNodes.forEach((element) {
       bool isSelected = false;
       if (selectedIndex != null) {
         isSelected = selectedIndex == element.id;
@@ -62,7 +57,7 @@ class _NodeFactory {
       }
       children.add(_wrapNodeWidget(element, isSelected));
     });
-    data.textNodes.forEach((element) {
+    _data.textNodes.forEach((element) {
       bool isSelected = false;
       if (selectedIndex != null) {
         isSelected = selectedIndex == element.id;
@@ -70,7 +65,7 @@ class _NodeFactory {
       }
       children.add(_wrapNodeWidget(element, isSelected));
     });
-    data.imageNodes.forEach((element) {
+    _data.imageNodes.forEach((element) {
       bool isSelected = false;
       if (selectedIndex != null) {
         isSelected = selectedIndex == element.id;

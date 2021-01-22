@@ -16,7 +16,7 @@ class PageNodeModel extends BaseNodeModel {
 
   @override
   void edit(BuildContext context, {void Function() onEndEdit}) {
-    Navigator.push(context, MaterialPageRoute(builder: (context) => NodeEditorContent(this)));
+    Navigator.push(context, MaterialPageRoute(builder: (context) => NodeEditorContent(this, onEndEdit)));
   }
 
   @override
@@ -122,12 +122,13 @@ class ImageNodeModel extends BaseNodeModel {
     return null;
   }
 
-  void editImage(Future<File> file) async {
-    imageInBase64 = base64Encode((await file).readAsBytesSync());
-  }
-
   @override
   void edit(BuildContext context, {void Function() onEndEdit}) {
+    void editImage(Future<File> file) async {
+      imageInBase64 = base64Encode((await file).readAsBytesSync());
+      onEndEdit?.call();
+    }
+
     showModalBottomSheet(
         context: context,
         builder: (BuildContext bc) {

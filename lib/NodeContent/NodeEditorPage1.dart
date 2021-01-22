@@ -2,8 +2,9 @@ part of nodes;
 
 class NodeEditorContent extends StatefulWidget {
   final PageNodeModel data;
+  final void Function() saveFunc;
 
-  NodeEditorContent(this.data);
+  NodeEditorContent(this.data, this.saveFunc);
 
   @override
   _NodeEditorContentState createState() => _NodeEditorContentState();

@@ -1,6 +1,7 @@
 library homepage;
 
 import 'dart:ui';
+import 'package:idea_space/MindMapping/MindMap.dart';
 import 'package:path/path.dart' as p;
 
 import 'package:flutter/cupertino.dart';

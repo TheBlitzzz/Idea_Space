@@ -283,16 +283,16 @@ class _HomepageState extends State<Homepage> {
     _searchFile();
   }
 
-  void _renameMindMap(String oldTitle, String newTitle) {
-    manager.renameMindMap(oldTitle, newTitle);
+  void _renameMindMap(MindMapModel mindMap, String newTitle) {
+    manager.renameMindMap(mindMap, newTitle);
     _searchFile();
   }
 
   void _openMindMap(MindMapFileModel fileData) async {
-    var mindMapData = await manager.getMindMap(fileData.title);
-    var renameFunc = (newTitle) => _renameMindMap(fileData.title, newTitle);
+    var mindMap = await manager.getMindMap(fileData.title);
+    var renameFunc = (newTitle) => _renameMindMap(mindMap, newTitle);
 
-    Navigator.push(context, MaterialPageRoute(builder: (context) => MindMap.Editor(fileData, mindMapData, renameFunc)));
+    Navigator.push(context, MaterialPageRoute(builder: (context) => MindMap.Editor(fileData, mindMap, renameFunc)));
   }
   //endregion
 }

@@ -295,7 +295,7 @@ class _EditorState extends State<Editor> {
 
   //region Node Tools
   void _editNode(BaseNodeModel node) {
-    node.edit(context, onEndEdit: () => setState(() {}));
+    node.edit(context, onEndEdit: () => setState(() => widget.data.save()));
   }
 
   void _startLinking(BaseNodeModel node) {
