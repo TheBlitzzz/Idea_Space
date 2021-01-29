@@ -13,7 +13,7 @@ class EditorToolsPainter extends CustomPainter {
       ..strokeCap = StrokeCap.round
       ..color = Colors.blue[100];
 
-    Rect arcRect = Rect.fromCenter(center: Offset.zero, width: size.width, height: size.height);
+    // Rect arcRect = Rect.fromCenter(center: Offset.zero, width: size.width, height: size.height);
     canvas.drawOval(Rect.fromCenter(center: Offset.zero, width: size.width, height: size.height), paint);
     // double segmentOffset = 0.5;
     // double arcSweepRadians = pi * 2 / 3 - segmentOffset * 2;

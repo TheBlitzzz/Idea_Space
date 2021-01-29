@@ -1,15 +1,8 @@
 library mind_mapping;
 
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:idea_space/IOHandler/IOHandler.dart';
 import 'dart:ui';
-import 'package:vector_math/vector_math_64.dart' as math;
-
-import '../NodeContent/Nodes.dart';
-import '../zExtensions/WidgetTransforms.dart';
 
 part 'MindMapEditor.dart';
 

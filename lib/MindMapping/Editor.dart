@@ -52,7 +52,9 @@ class _EditorState extends State<Editor> {
     return Scaffold(
       appBar: AppBar(
         title: EditableTitle(_editTitle, widget.fileData.title),
+        leading: IconButton(icon: Icon(Icons.arrow_back_ios), onPressed: () => Navigator.of(context).pop()),
       ),
+      endDrawer: SettingsDrawer(),
       body: _createMindMapViewer(),
     );
   }

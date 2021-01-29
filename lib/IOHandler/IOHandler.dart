@@ -4,10 +4,10 @@ import 'dart:convert';
 import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:idea_space/MindMapping/MindMap.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
+import 'package:idea_space/MindMapping/MindMap.dart';
 
 part 'MindMap/MindMapFileManager.dart';
 part 'MindMap/MindMapFileModel.dart';
