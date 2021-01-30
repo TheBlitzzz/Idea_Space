@@ -1,216 +1,295 @@
 part of nodes;
 
-class NodeEditorPage extends StatefulWidget {
-  // final BaseNode node;
-  // final MindMapEditorState rootMindMap;
+class NodeEditorContent extends StatefulWidget {
+  final PageNodeModel data;
+  final void Function() saveFunc;
 
-  // NodeEditorPage(this.node, this.rootMindMap);
+  NodeEditorContent(this.data, this.saveFunc);
 
   @override
-  State<StatefulWidget> createState() {
-    return NodeEditorState();
-  }
+  _NodeEditorContentState createState() => _NodeEditorContentState(data.textBlocks.length);
 }
 
-class NodeEditorState extends State<NodeEditorPage> {
-  final TextEditingController nodeTitleController = TextEditingController();
-  final TextEditingController content1Controller = TextEditingController();
-  bool isEditing = false;
+class _NodeEditorContentState extends State<NodeEditorContent> with TickerProviderStateMixin {
+  final TextEditingController _titleController = TextEditingController();
+  final TextEditingController _textBlockController = TextEditingController();
+  final inputBorder = OutlineInputBorder(
+    borderSide: borderSide,
+    borderRadius: BorderRadius.circular(_borderRadius),
+  );
+  static const BorderSide borderSide = BorderSide(color: Colors.blue, width: 2);
+  final List<int> textBlockIds;
 
-  @override
-  void initState() {
-    super.initState();
+  int selectedIndex;
+
+  _NodeEditorContentState(int count) : textBlockIds = [] {
+    for (int i = 0; i < count; i++) {
+      textBlockIds.add(i);
+    }
   }
 
   @override
   void dispose() {
-    nodeTitleController.dispose();
-    content1Controller.dispose();
     super.dispose();
+    _titleController.dispose();
+    _textBlockController.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    // nodeTitleController.text = widget.node.title;
-    nodeTitleController.selection = TextSelection.fromPosition(TextPosition(offset: nodeTitleController.text.length));
+    const titleStyle = TextStyle(fontSize: 30, fontWeight: FontWeight.bold);
 
-    Widget nodeTitleField = TextField(
-      autocorrect: true,
-      enableSuggestions: true,
-      keyboardType: TextInputType.multiline,
-      maxLines: null,
-      textInputAction: TextInputAction.done,
-      // onChanged: (String value) => setState(() => widget.node.title = value),
-      controller: nodeTitleController,
-    );
-
-    Widget titleField = TextField(
-      decoration: InputDecoration(
-        border: OutlineInputBorder(),
-        labelText: 'Title',
-        prefixIcon: IconButton(
-          icon: Icon(Icons.unfold_more),
-        ),
-        suffixIcon: IconButton(
-          icon: Icon(Icons.more_horiz),
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Color(0xff1B1B2F),
+        title: EditableTitle(_editNodeTitle, widget.data.title),
+        leading: IconButton(icon: Icon(Icons.arrow_back_ios), onPressed: () => Navigator.of(context).pop()),
+      ),
+      resizeToAvoidBottomInset: true,
+      endDrawer: SettingsDrawer(),
+      body: Container(
+        // color: Color(0xff1f4068),
+        color: UserManager.getInstance.thisUser.getColour,
+        child: Stack(
+          children: [
+            Column(children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 20, 20, 10),
+                child: TextFormField(
+                  maxLines: 1,
+                  style: titleStyle,
+                  decoration: InputDecoration(
+                    focusedBorder: inputBorder,
+                    border: inputBorder,
+                    hintText: "Enter a title",
+                    hintStyle: titleStyle,
+                  ),
+                  initialValue: widget.data.nodeTitle,
+                  onChanged: _editTitle,
+                ),
+              ),
+              _createTextBlocks(),
+            ]),
+            _createTextFormatTools(),
+          ],
         ),
       ),
-      autocorrect: true,
-      enableSuggestions: true,
-      keyboardType: TextInputType.multiline,
-      maxLines: null,
-      textInputAction: TextInputAction.done,
+      floatingActionButton: FloatingActionButton(
+        child: Icon(Icons.add, size: 30, color: Colors.white),
+        backgroundColor: Colors.blueAccent,
+        onPressed: () {
+          setState(() {
+            widget.data.addTextBlock();
+            widget.saveFunc();
+            if (textBlockIds.length > 0) {
+              textBlockIds.add(textBlockIds[textBlockIds.length - 1] + 1);
+            } else {
+              textBlockIds.add(1);
+            }
+          });
+        },
+      ),
     );
+  }
 
-    Widget testContentField;
-    if (isEditing) {
-      testContentField = Stack(
-        children: [
-          Padding(
-            padding: EdgeInsets.only(right: 200),
-            child: TextField(
-              decoration: InputDecoration(
-                border: OutlineInputBorder(),
-                labelText: 'Content 1',
-                prefixIcon: IconButton(
-                  icon: Icon(Icons.unfold_more),
-                ),
-                suffixIcon: IconButton(
-                  icon: Icon(Icons.more_horiz),
-                  onPressed: () => setState(() => isEditing = !isEditing),
-                ),
-              ),
-              autocorrect: true,
-              enableSuggestions: true,
-              keyboardType: TextInputType.multiline,
-              maxLines: null,
-              textInputAction: TextInputAction.done,
-              controller: content1Controller,
-            ),
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              IconButton(
-                icon: Icon(Icons.add),
-              ),
-              IconButton(
-                icon: Icon(Icons.copy),
-              ),
-              IconButton(
-                icon: Icon(Icons.bookmark),
-              ),
-              IconButton(
-                icon: Icon(Icons.delete),
-              ),
-            ],
-          )
-        ],
+  Widget hidingIcon(TextEditingController controller) {
+    if (controller.text != "") {
+      return IconButton(
+        icon: Icon(Icons.clear),
+        onPressed: () => setState(() => controller.clear()),
       );
     } else {
-      testContentField = TextField(
-        decoration: InputDecoration(
-          border: OutlineInputBorder(),
-          labelText: 'Content 1',
-          prefixIcon: IconButton(
-            icon: Icon(Icons.unfold_more),
-          ),
-          suffixIcon: IconButton(
-            icon: Icon(Icons.more_horiz),
-            onPressed: () => setState(() => isEditing = !isEditing),
-          ),
-        ),
-        autocorrect: true,
-        enableSuggestions: true,
-        keyboardType: TextInputType.multiline,
-        maxLines: null,
-        textInputAction: TextInputAction.done,
-        controller: content1Controller,
-      );
+      return null;
     }
+  }
 
-    Widget contentField = TextField(
-      decoration: InputDecoration(
-        border: OutlineInputBorder(),
-        labelText: 'Content 2',
-        prefixIcon: IconButton(
-          icon: Icon(Icons.unfold_more),
-        ),
-        suffixIcon: IconButton(
-          icon: Icon(Icons.more_horiz),
-        ),
+  //region UI
+  Widget _createTextBlocks() {
+    return Expanded(
+      child: ListView.builder(
+        shrinkWrap: true,
+        padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
+        itemCount: textBlockIds.length,
+        itemBuilder: (context, int i) {
+          var textBlock = widget.data.getTextBlock(i);
+          return Dismissible(
+            direction: DismissDirection.endToStart,
+            key: ValueKey(textBlockIds[i]),
+            background: Container(
+              child: Icon(Icons.delete, size: 30, color: Colors.white).pad(0, 20, 0, 0),
+              alignment: AlignmentDirectional.centerEnd,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(_borderRadius),
+                color: Colors.red,
+              ),
+            ),
+            onDismissed: (direction) => setState(() {
+              widget.data.deleteTextBlock(i);
+              textBlockIds.removeAt(i);
+              widget.saveFunc();
+            }),
+            child: GestureDetector(
+              child: Container(
+                child: Text(
+                  textBlock.content,
+                  style: TextStyle(
+                    fontWeight: textBlock.isBold ? FontWeight.bold : FontWeight.normal,
+                    fontSize: textBlock.getFontSize,
+                    fontStyle: textBlock.isItalic ? FontStyle.italic : FontStyle.normal,
+                    decoration: textBlock.isUnderlined ? TextDecoration.underline : TextDecoration.none,
+                  ),
+                ),
+                padding: EdgeInsets.all(10),
+                alignment: Alignment.centerLeft,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(_borderRadius),
+                  border: Border.all(color: i == selectedIndex ? Colors.tealAccent : Colors.white),
+                  color: Color(0x24FFFFFF),
+                ),
+                width: double.infinity,
+                constraints: BoxConstraints(minHeight: 60),
+              ),
+              onTap: () {
+                setState(() => selectedIndex = i);
+
+                String newTitle;
+                showDialog(
+                    context: context,
+                    builder: (context) {
+                      return AlertDialog(
+                        title: Text("Edit Text"),
+                        content: Container(
+                          child: TextFormField(
+                            maxLines: null,
+                            textAlignVertical: TextAlignVertical.center,
+                            decoration:
+                                InputDecoration(border: OutlineInputBorder(borderRadius: BorderRadius.circular(10))),
+                            onChanged: (value) => newTitle = value,
+                            initialValue: widget.data.getTextBlock(i).content,
+                          ),
+                        ),
+                        actions: [
+                          FlatButton(
+                            child: Text('Save'),
+                            onPressed: () {
+                              setState(() {
+                                var textBlock = widget.data.getTextBlock(i);
+                                textBlock.content = (newTitle == null || newTitle == "") ? "Untitled" : newTitle;
+                                widget.data.editTextBlock(i, textBlock);
+                                widget.saveFunc();
+                              });
+                              Navigator.of(context).pop();
+                            },
+                          ),
+                          FlatButton(
+                              child: Text('Cancel'),
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              }),
+                        ],
+                      );
+                    });
+              },
+            ),
+          ).pad(5, 5, 5, 5);
+        },
       ),
-      autocorrect: true,
-      enableSuggestions: true,
-      keyboardType: TextInputType.multiline,
-      maxLines: null,
-      textInputAction: TextInputAction.done,
     );
+  }
 
-    Widget spacing = SizedBox(height: 20);
-
-    Widget list = ListView(
-      children: [
-        spacing,
-        titleField,
-        spacing,
-        testContentField,
-        spacing,
-        contentField,
-        SizedBox(height: 5),
-        Padding(
-          padding: EdgeInsets.only(left: 80, right: 80),
-          child: OutlinedButton(
-            style: ButtonStyle(
-              backgroundColor: MaterialStateProperty.all(Colors.grey[700]),
-              foregroundColor: MaterialStateProperty.all(Colors.white),
-            ),
-            child: Icon(Icons.add),
-            onPressed: () => debugPrint("Adding content"),
+  Widget _createTextFormatTools() {
+    var spacer = SizedBox(width: 10);
+    return Container(
+      height: 70,
+      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.all(Radius.circular(10))),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          IconButton(
+            icon: Icon(Icons.format_size, color: Colors.black, size: 30),
+            onPressed: () => setState(() {
+              var textBlock = widget.data.getTextBlock(selectedIndex);
+              if (textBlock.textSizeIndex > 0) textBlock.textSizeIndex--;
+              widget.data.editTextBlock(selectedIndex, textBlock);
+              widget.saveFunc();
+            }),
           ),
-        ),
-      ],
-    );
-
-    return WillPopScope(
-      onWillPop: () async => false,
-      child: Scaffold(
-        appBar: AppBar(
-          title: nodeTitleField,
-          leading: IconButton(
-            icon: Icon(Icons.arrow_back_ios),
-            onPressed: backToMindMap,
+          spacer,
+          IconButton(
+            icon: Icon(Icons.format_size, color: Colors.black, size: 40),
+            onPressed: () => setState(() {
+              var textBlock = widget.data.getTextBlock(selectedIndex);
+              if (textBlock.textSizeIndex < 6) textBlock.textSizeIndex++;
+              widget.data.editTextBlock(selectedIndex, textBlock);
+              widget.saveFunc();
+            }),
           ),
-          actions: [
-            IconButton(
-              icon: Icon(Icons.undo),
-              onPressed: () => debugPrint("UNDOING"),
-            ),
-            IconButton(
-              icon: Icon(Icons.redo),
-              onPressed: () => debugPrint("REDOING"),
-            ),
-            IconButton(
-              icon: Icon(Icons.more_vert),
-              onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => SettingsPage())),
-            ),
-          ],
-          backgroundColor: Colors.blueGrey[800],
-        ),
-        body: Center(
-          child: list,
-        ),
+          spacer,
+          IconButton(
+            icon: Icon(Icons.format_bold, color: Colors.black),
+            iconSize: 40,
+            onPressed: () => setState(() {
+              var textBlock = widget.data.getTextBlock(selectedIndex);
+              textBlock.isBold = !textBlock.isBold;
+              widget.data.editTextBlock(selectedIndex, textBlock);
+              widget.saveFunc();
+            }),
+          ),
+          spacer,
+          IconButton(
+            icon: Icon(Icons.format_underline_outlined, color: Colors.black),
+            iconSize: 40,
+            onPressed: () => setState(() {
+              var textBlock = widget.data.getTextBlock(selectedIndex);
+              textBlock.isUnderlined = !textBlock.isUnderlined;
+              widget.data.editTextBlock(selectedIndex, textBlock);
+              widget.saveFunc();
+            }),
+          ),
+          spacer,
+          IconButton(
+            icon: Icon(Icons.format_italic, color: Colors.black),
+            iconSize: 40,
+            onPressed: () => setState(() {
+              var textBlock = widget.data.getTextBlock(selectedIndex);
+              textBlock.isItalic = !textBlock.isItalic;
+              widget.data.editTextBlock(selectedIndex, textBlock);
+              widget.saveFunc();
+            }),
+          ),
+        ],
       ),
-    );
+    ).align(Alignment.bottomCenter);
   }
 
-  void backToMindMap() {
-    // widget.rootMindMap.selectNode((widget.node.id));
-    // widget.rootMindMap.deselectActiveSelection();
-    Navigator.of(context).pop();
+  // Widget _createClearIcon(int index) {
+  //   return IconButton(
+  //     icon: Icon(Icons.clear),
+  //     onPressed: () => setState(() {
+  //       var textBlock = widget.data.getTextBlock(index);
+  //       textBlock.content = "";
+  //       widget.data.editTextBlock(index, textBlock);
+  //       widget.saveFunc();
+  //     }),
+  //   );
+  // }
+
+  //endregion
+
+  //region Logic
+  void _editNodeTitle(String newTitle) {
+    setState(() {
+      widget.data.title = newTitle;
+      widget.saveFunc();
+    });
   }
 
-  void refresh() {
-    setState(() {});
+  void _editTitle(String newTitle) {
+    setState(() {
+      widget.data.nodeTitle = newTitle;
+      widget.saveFunc();
+    });
   }
+//endregion
 }

@@ -9,8 +9,6 @@ class _LoginState extends State<Login> {
   static const Duration _animDuration = Duration(milliseconds: 250);
   static const double _fieldHeight = 60;
 
-  final UserManager manager = UserManager();
-
   final TextEditingController _usernameController = new TextEditingController();
   final TextEditingController _passwordController = new TextEditingController();
   final TextEditingController _confirmPasswordController = new TextEditingController();
@@ -20,8 +18,6 @@ class _LoginState extends State<Login> {
   String get _password => _passwordController.text;
 
   String get _confirmPassword => _confirmPasswordController.text;
-
-  UserModel thisUser;
 
   bool hasLoaded = false;
   bool isSignUp = false;
@@ -38,13 +34,13 @@ class _LoginState extends State<Login> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // backgroundColor: Colors.blueGrey[700], //Color.fromARGB(255, 10, 36, 71),
       body: hasLoaded ? _createMainBody() : _createFutureMainBody(),
     );
   }
 
   //region UI
   Widget _createFutureMainBody() {
+    var manager = UserManager.getInstance;
     return FutureBuilder<List<UserModel>>(
       future: manager.load(),
       builder: (context, snapShot) {
@@ -185,9 +181,10 @@ class _LoginState extends State<Login> {
       return;
     }
 
-    thisUser = manager.getUser(_username);
-    if (thisUser != null) {
-      if (_password == thisUser.password) {
+    var manager = UserManager.getInstance;
+    manager.getUser(_username);
+    if (manager.thisUser != null) {
+      if (_password == manager.thisUser.password) {
         _navigateToHomepage();
         return;
       } else {
@@ -228,18 +225,20 @@ class _LoginState extends State<Login> {
       return;
     }
 
+    var manager = UserManager.getInstance;
     bool duplicateUsername = manager.getUser(_username) != null;
     if (duplicateUsername) {
       _showWarning("Username has already been taken");
     } else {
-      thisUser = new UserModel(_username, _password);
-      manager.addNewUser(thisUser);
+      var newUser = new UserModel(_username, _password, 0xFF424242);
+      manager.addNewUser(newUser);
+      manager.thisUser = newUser;
       _navigateToHomepage();
     }
   }
 
   void _navigateToHomepage() {
-    Navigator.of(context).push(MaterialPageRoute(builder: (context) => Homepage(thisUser, manager)));
+    Navigator.of(context).push(MaterialPageRoute(builder: (context) => Homepage()));
     setState(() {
       isSignUp = false;
       _usernameController.text = "";

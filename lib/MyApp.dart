@@ -14,7 +14,10 @@ class MyApp extends StatelessWidget {
 
     return MaterialApp(
       theme: theme,
-      home: Login(),
+      initialRoute: "/login",
+      routes: {
+        "/login": (context) => Login(),
+      },
     );
   }
 }

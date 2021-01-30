@@ -3,7 +3,7 @@ part of nodes;
 @JsonSerializable()
 class PageNodeModel extends BaseNodeModel {
   String nodeTitle = "Untitled";
-  List<String> textBlocks = [];
+  List<TextBlockModel> textBlocks = [];
 
   @override
   eNodeType get type => eNodeType.Page;
@@ -11,12 +11,36 @@ class PageNodeModel extends BaseNodeModel {
   PageNodeModel(int id, double width, double height, double dx, double dy)
       : super(id, "Page #$id", width, height, dx, dy);
 
-  // PageNodeModel(int id, double width, double height, double dx, double dy, this.nodeTitle, this.textBlocks)
-  //     : super(id, "Page #$id", width, height, dx, dy);
+  //region Text blocks
+  void addTextBlock() {
+    textBlocks.add(TextBlockModel(""));
+  }
+
+  TextBlockModel getTextBlock(int index) => textBlocks[index];
+
+  void moveTextBlockDown(int index) {
+    if (index != textBlocks.length - 1) {
+      var temp = textBlocks[index + 1];
+      textBlocks[index + 1] = textBlocks[index];
+      textBlocks[index] = temp;
+    } else {
+      debugPrint("Can't move the last text block further down!");
+    }
+  }
+
+  void editTextBlock(int index, TextBlockModel newContent) {
+    textBlocks[index] = newContent;
+  }
+
+  void deleteTextBlock(int index) {
+    textBlocks.removeAt(index);
+  }
+
+  //endregion
 
   @override
   void edit(BuildContext context, {void Function() onEndEdit}) {
-    Navigator.push(context, MaterialPageRoute(builder: (context) => NodeEditorContent(this)));
+    Navigator.push(context, MaterialPageRoute(builder: (context) => NodeEditorContent(this, onEndEdit)));
   }
 
   @override
@@ -39,6 +63,29 @@ class PageNodeModel extends BaseNodeModel {
 }
 
 @JsonSerializable()
+class TextBlockModel {
+  static const List<double> textSizes = [10, 11, 12, 14, 16, 18, 20];
+
+  String content;
+  int textSizeIndex;
+  bool isUnderlined = false;
+  bool isBold = false;
+  bool isItalic = false;
+
+  double get getFontSize => textSizes[textSizeIndex];
+
+  TextBlockModel(this.content) {
+    textSizeIndex = 2;
+  }
+
+  //region JSON
+  factory TextBlockModel.fromJson(Map<String, dynamic> json) => _$TextBlockModelFromJson(json);
+
+  Map<String, dynamic> toJson() => _$TextBlockModelToJson(this);
+//endregion
+}
+
+@JsonSerializable()
 class TextNodeModel extends BaseNodeModel {
   @override
   eNodeType get type => eNodeType.Text;
@@ -55,11 +102,12 @@ class TextNodeModel extends BaseNodeModel {
           return AlertDialog(
             title: Text("Edit Text"),
             content: Container(
-              child: TextField(
+              child: TextFormField(
                 maxLines: null,
                 textAlignVertical: TextAlignVertical.center,
                 decoration: InputDecoration(border: OutlineInputBorder(borderRadius: BorderRadius.circular(10))),
                 onChanged: (value) => newTitle = value,
+                initialValue: title,
               ),
             ),
             actions: [
@@ -85,10 +133,15 @@ class TextNodeModel extends BaseNodeModel {
   @override
   Widget createNodeWidget(bool isSelected) {
     return Container(
-      child: Text(title, softWrap: true, overflow: TextOverflow.ellipsis),
+      child: Text(
+        title,
+        softWrap: true,
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(color: Color(colour)),
+      ),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(_borderRadius),
-        color: isSelected ? Color(colour) : _bgColour,
+        color: isSelected ? Colors.grey[800] : UserManager.getInstance.thisUser.getColour,
         border: isSelected ? Border.all(width: _outlineWidth, color: _toolOutlineColour) : null,
       ),
       alignment: Alignment.center,
@@ -122,12 +175,13 @@ class ImageNodeModel extends BaseNodeModel {
     return null;
   }
 
-  void editImage(Future<File> file) async {
-    imageInBase64 = base64Encode((await file).readAsBytesSync());
-  }
-
   @override
   void edit(BuildContext context, {void Function() onEndEdit}) {
+    void editImage(Future<File> file) async {
+      imageInBase64 = base64Encode((await file).readAsBytesSync());
+      onEndEdit?.call();
+    }
+
     showModalBottomSheet(
         context: context,
         builder: (BuildContext bc) {

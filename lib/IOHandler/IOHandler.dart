@@ -4,10 +4,10 @@ import 'dart:convert';
 import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:idea_space/MindMapping/MindMap.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
+import 'package:idea_space/MindMapping/MindMap.dart';
 
 part 'MindMap/MindMapFileManager.dart';
 part 'MindMap/MindMapFileModel.dart';
@@ -33,6 +33,7 @@ Future<String> readFileAsString(List<String> fileDir, String fileName) async {
   final filePath = p.join((await _getPersistentPath(fileDir)).path, fileName);
 
   if (await File(filePath).exists()) {
+    debugPrint("Reading $filePath");
     return await File(filePath).readAsString();
   }
 
@@ -74,5 +75,12 @@ void deleteFile(List<String> fileDir, String fileName) async {
   final file = File(filePath);
   if (await file.exists()) {
     file.delete();
+  } else {
+    final dir = Directory(filePath);
+    if (await dir.exists()) {
+      dir.delete(recursive: true);
+    } else {
+      debugPrint(filePath);
+    }
   }
 }

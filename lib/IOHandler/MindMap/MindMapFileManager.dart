@@ -18,7 +18,7 @@ class MindMapFileManager {
   Future<List<MindMapFileModel>> load() async {
     var contents = await readFileAsString([username], _mindMapIndexPath);
     if (contents == null) {
-      reset();
+      deleteAll();
     } else {
       _data = MindMapFileListModel.fromJson(jsonDecode(contents));
     }
@@ -54,6 +54,16 @@ class MindMapFileManager {
       mindMap.parentUser = username;
     });
     save();
+  }
+
+  void deleteAll() {
+    if (_data?.allMindMaps != null) {
+      for (var mindMap in _data.allMindMaps) {
+        deleteMindMap(mindMap.title);
+      }
+    }
+
+    reset();
   }
 
   void reset() {
@@ -109,14 +119,20 @@ class MindMapFileManager {
     save();
   }
 
-  void renameMindMap(String oldName, String newTitle) {
+  void renameMindMap(MindMapModel mindMap, String newTitle) async {
     for (int i = 0; i < _data.allMindMaps.length; i++) {
       var element = _data.allMindMaps[i];
-      if (element.title == oldName) {
-        oldName = element.fileName;
+      if (element.title == mindMap.fileData.title) {
+        // Renames the file data
         element._rename(newTitle);
         _updateFileLists();
+
+        // Renames the Mind Map Model
+        var oldName = mindMap.fileData.title;
+        mindMap.fileData = element;
+        // Renaming the actual file
         renameFile([element.parentUser], oldName, [element.parentUser], element.fileName);
+        mindMap.save();
         save();
         return;
       }
