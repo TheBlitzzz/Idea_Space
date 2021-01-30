@@ -33,6 +33,7 @@ Future<String> readFileAsString(List<String> fileDir, String fileName) async {
   final filePath = p.join((await _getPersistentPath(fileDir)).path, fileName);
 
   if (await File(filePath).exists()) {
+    debugPrint("Reading $filePath");
     return await File(filePath).readAsString();
   }
 
@@ -74,5 +75,12 @@ void deleteFile(List<String> fileDir, String fileName) async {
   final file = File(filePath);
   if (await file.exists()) {
     file.delete();
+  } else {
+    final dir = Directory(filePath);
+    if (await dir.exists()) {
+      dir.delete(recursive: true);
+    } else {
+      debugPrint(filePath);
+    }
   }
 }

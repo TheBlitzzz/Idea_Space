@@ -88,7 +88,7 @@ class _EditorState extends State<Editor> {
       child: GestureDetector(
         child: Container(
           child: Stack(children: widgetsOnViewer),
-          color: _bgColour,
+          color: UserManager.getInstance.thisUser.getColour,
           height: 3580,
           width: 2480,
         ),
@@ -108,6 +108,12 @@ class _EditorState extends State<Editor> {
     var position = node.getPosition + Offset(20, node.height);
     var actions = [
       ToolAction(Icons.edit_outlined, () => _editNode(node)),
+      ToolAction(Icons.color_lens_outlined, () {
+        var colourPicker = NodeColorPicker(Color(node.colour), (newColour) {
+          _editNodeColour(node, newColour);
+        });
+        colourPicker.showColorPicker(context);
+      }),
       ToolAction(Icons.link, () => _startLinking(node)),
       ToolAction(Icons.delete, () => _deleteNode(node)),
     ];
@@ -302,6 +308,11 @@ class _EditorState extends State<Editor> {
 
   void _startLinking(BaseNodeModel node) {
     linkStart = node;
+  }
+
+  void _editNodeColour(BaseNodeModel node, Color newColour) {
+    setState(() => node.colour = newColour.value);
+    widget.data.save();
   }
 
   void _deleteNode(BaseNodeModel node) {

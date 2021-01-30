@@ -18,7 +18,7 @@ class MindMapFileManager {
   Future<List<MindMapFileModel>> load() async {
     var contents = await readFileAsString([username], _mindMapIndexPath);
     if (contents == null) {
-      reset();
+      deleteAll();
     } else {
       _data = MindMapFileListModel.fromJson(jsonDecode(contents));
     }
@@ -54,6 +54,16 @@ class MindMapFileManager {
       mindMap.parentUser = username;
     });
     save();
+  }
+
+  void deleteAll() {
+    if (_data?.allMindMaps != null) {
+      for (var mindMap in _data.allMindMaps) {
+        deleteMindMap(mindMap.title);
+      }
+    }
+
+    reset();
   }
 
   void reset() {

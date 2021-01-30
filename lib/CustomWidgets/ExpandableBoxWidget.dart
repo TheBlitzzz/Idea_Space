@@ -56,8 +56,8 @@ class _ExpandableBoxState extends State<ExpandableBox> with TickerProviderStateM
 
     List<Widget> children = [title];
     if (isExpanded) {
-      children.add(spacing);
       widget.items.forEach((element) {
+        children.add(spacing);
         children.add(Container(
           height: element.height,
           width: double.infinity,

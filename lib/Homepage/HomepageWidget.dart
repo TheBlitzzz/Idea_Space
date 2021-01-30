@@ -1,11 +1,6 @@
 part of homepage;
 
 class Homepage extends StatefulWidget {
-  final UserModel user;
-  final UserManager userManager;
-
-  Homepage(this.user, this.userManager);
-
   @override
   _HomepageState createState() => _HomepageState();
 }
@@ -25,11 +20,12 @@ class _HomepageState extends State<Homepage> {
 
   @override
   Widget build(BuildContext context) {
-    manager.setUser(widget.user.username);
+    var user = UserManager.getInstance.thisUser;
+    manager.setUser(user.username);
 
     return Scaffold(
       backgroundColor: Colors.grey[900],
-      appBar: AppBar(title: Text("${widget.user.username}'s Space")),
+      appBar: AppBar(title: Text("${user.username}'s Space")),
       body: Center(
         child: Stack(
           fit: StackFit.expand,
@@ -118,7 +114,7 @@ class _HomepageState extends State<Homepage> {
       padding: EdgeInsets.only(top: 80, left: 10, right: 10),
       child: Container(
           decoration: BoxDecoration(
-            color: Color.fromARGB(255, 31, 64, 104),
+            color: UserManager.getInstance.thisUser.getColour,
             borderRadius: BorderRadius.only(
               topLeft: Radius.circular(_borderRadius),
               topRight: Radius.circular(_borderRadius),
@@ -227,7 +223,7 @@ class _HomepageState extends State<Homepage> {
   }
 
   void _createNewMindMap(String mindMapName) {
-    var newMindMap = MindMapFileModel(mindMapName, widget.user.username, DateTime.now());
+    var newMindMap = MindMapFileModel(mindMapName, UserManager.getInstance.thisUser.username, DateTime.now());
     setState(() => manager.addNewMindMap(newMindMap));
     _searchFile();
   }
@@ -238,8 +234,28 @@ class _HomepageState extends State<Homepage> {
   }
 
   void _deleteMindMap(String title) {
-    setState(() => manager.deleteMindMap(title));
-    _searchFile();
+    showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text("Delete Mind Map?"),
+            content: Text("Are you sure you want to delete '$title'?"),
+            actions: [
+              FlatButton(
+                child: Text("Cancel"),
+                onPressed: () => Navigator.of(context).pop(),
+              ),
+              FlatButton(
+                child: Text("Yes, I am sure!"),
+                onPressed: () {
+                  setState(() => manager.deleteMindMap(title));
+                  _searchFile();
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          );
+        });
   }
 
   void _renameMindMap(MindMapModel mindMap, String newTitle) {

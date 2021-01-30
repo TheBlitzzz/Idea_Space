@@ -6,16 +6,23 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'package:idea_space/CustomWidgets/CustomWidgets.dart';
-import 'package:idea_space/Homepage/Homepage.dart';
+import '../Homepage/Homepage.dart';
 import 'package:idea_space/IOHandler/IOHandler.dart';
 import 'package:idea_space/NodeContent/Nodes.dart';
 import 'package:json_annotation/json_annotation.dart';
+import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 
 part 'Editor.dart';
+
 part 'NodeFactory.dart';
+
 part 'LinkDrawer.dart';
+
 part 'ToolWidgets.dart';
+
 part 'MindMapModel.dart';
+
+part 'NodeColorPicker.dart';
 
 part 'MindMap.g.dart';
 
@@ -24,6 +31,5 @@ const _animDuration = Duration(milliseconds: 100);
 const Color _toolOutlineColour = Colors.blue;
 
 Color get _defaultNodeColour => Colors.grey[700];
-Color get _bgColour => Colors.grey[850];
 
 const Size _defaultNodeSize = Size(120, 40);

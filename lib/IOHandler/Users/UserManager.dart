@@ -2,8 +2,17 @@ part of io_handler;
 
 class UserManager {
   static const String _userListPath = "Users.txt";
+  static UserManager _instance;
+
+  static UserManager get getInstance {
+    if (_instance == null) {
+      _instance = new UserManager();
+    }
+    return _instance;
+  }
 
   UserListModel _data;
+  UserModel thisUser;
 
   //region IO
   Future<List<UserModel>> load() async {
@@ -24,6 +33,7 @@ class UserManager {
     for (int i = 0; i < _data.allUsers.length; i++) {
       UserModel user = _data.allUsers[i];
       if (_data.allUsers[i].username == username) {
+        thisUser = user;
         return user;
       }
     }
@@ -40,9 +50,22 @@ class UserManager {
     save();
   }
 
-  void deleteUser(int index) {
-    _data.allUsers.removeAt(index);
-    save();
+  void deleteUser(String username) {
+    int index;
+    for (int i = 0; i < _data.allUsers.length; i++) {
+      var user = _data.allUsers[i];
+      if (user.username == username) {
+        index = i;
+        deleteFile([username], "");
+      }
+    }
+
+    if (index != null) {
+      _data.allUsers.removeAt(index);
+      save();
+    } else {
+      debugPrint("No such user : $username");
+    }
   }
 }
 
