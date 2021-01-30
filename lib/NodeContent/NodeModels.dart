@@ -133,10 +133,15 @@ class TextNodeModel extends BaseNodeModel {
   @override
   Widget createNodeWidget(bool isSelected) {
     return Container(
-      child: Text(title, softWrap: true, overflow: TextOverflow.ellipsis),
+      child: Text(
+        title,
+        softWrap: true,
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(color: Color(colour)),
+      ),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(_borderRadius),
-        color: isSelected ? Color(colour) : _bgColour,
+        color: isSelected ? Colors.grey[800] : UserManager.getInstance.thisUser.getColour,
         border: isSelected ? Border.all(width: _outlineWidth, color: _toolOutlineColour) : null,
       ),
       alignment: Alignment.center,
