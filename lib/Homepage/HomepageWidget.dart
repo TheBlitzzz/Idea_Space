@@ -267,7 +267,11 @@ class _HomepageState extends State<Homepage> {
     var mindMap = await manager.getMindMap(fileData.title);
     var renameFunc = (newTitle) => _renameMindMap(mindMap, newTitle);
 
-    Navigator.push(context, MaterialPageRoute(builder: (context) => MindMap.Editor(fileData, mindMap, renameFunc)));
+    Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) =>
+                MindMap.Editor(fileData, mindMap, renameFunc, () => manager.updateFileLastEdit(fileData))));
   }
   //endregion
 }

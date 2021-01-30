@@ -83,18 +83,26 @@ class _SettingsDrawerState extends State<SettingsDrawer> {
     ];
 
     return Drawer(
-      child: ListView(
-        padding: EdgeInsets.zero,
-        children: <Widget>[
-          DrawerHeader(
-            child: Text('Settings', style: TextStyle(fontSize: 40)),
-            duration: _animDuration,
-            decoration: BoxDecoration(color: Colors.blue),
-          ).wrapSized(height: 150),
-          ExpandableBox(24, 10, accountWidgets, "Account"),
-          ExpandableBox(24, 10, themeWidgets, "Theme colour"),
-          ExpandableBox(24, 10, aboutWidgets, "About"),
-        ],
+      child: Container(
+        decoration: BoxDecoration(
+          color: Color.fromARGB(255, 27, 27, 47),
+        ),
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: <Widget>[
+            DrawerHeader(
+              child: Text('Settings', style: TextStyle(fontSize: 40)),
+              duration: _animDuration,
+              decoration: BoxDecoration(
+                color: Colors.blue[800],
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ).wrapSized(height: 150),
+            ExpandableBox(36, 10, accountWidgets, "Account"),
+            ExpandableBox(36, 10, themeWidgets, "Theme colour"),
+            ExpandableBox(36, 10, aboutWidgets, "About"),
+          ],
+        ),
       ),
     );
   }

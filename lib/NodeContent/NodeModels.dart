@@ -95,7 +95,7 @@ class TextNodeModel extends BaseNodeModel {
 
   @override
   void edit(BuildContext context, {void Function() onEndEdit}) {
-    String newTitle;
+    String newTitle = title;
     showDialog(
         context: context,
         builder: (context) {
@@ -136,7 +136,6 @@ class TextNodeModel extends BaseNodeModel {
       child: Text(
         title,
         softWrap: true,
-        overflow: TextOverflow.ellipsis,
         style: TextStyle(color: Color(colour)),
       ),
       decoration: BoxDecoration(
