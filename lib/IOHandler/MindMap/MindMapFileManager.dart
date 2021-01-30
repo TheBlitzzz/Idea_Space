@@ -82,12 +82,13 @@ class MindMapFileManager {
       if (element.title.contains(searchTerm)) tempDomain.add(element);
     });
 
-    tempDomain.sort((a, b) => (a.title.toUpperCase()).compareTo(b.title.toUpperCase()));
+    if (searchedType != MindMapType.Recent)
+      tempDomain.sort((a, b) => (a.title.toUpperCase()).compareTo(b.title.toUpperCase()));
     return tempDomain;
   }
 
   void _updateFileLists() {
-    var allFiles = [];
+    List<MindMapFileModel> allFiles = [];
     allFiles.addAll(_data.allMindMaps);
     allFiles.sort((a, b) => a.lastEditTime.compareTo(b.lastEditTime));
 
@@ -139,8 +140,8 @@ class MindMapFileManager {
     }
   }
 
-  void updateFileLastEdit(int index) {
-    _data.allMindMaps[index].updateLastEdit();
+  void updateFileLastEdit(MindMapFileModel fileData) {
+    fileData.updateLastEdit();
     _updateFileLists();
     save();
   }

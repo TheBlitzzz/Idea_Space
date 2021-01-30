@@ -46,9 +46,16 @@ class _ExpandableBoxState extends State<ExpandableBox> with TickerProviderStateM
     var title = InkWell(
       child: Row(
         children: [
-          _createDropDownArrow(),
+          _createDropDownArrow(widget.titleHeight),
           SizedBox(width: 20),
-          Text(widget.title, textAlign: TextAlign.center),
+          Text(
+            widget.title,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
         ],
       ),
       onTap: _checkExpanded,
@@ -76,7 +83,7 @@ class _ExpandableBoxState extends State<ExpandableBox> with TickerProviderStateM
       height: (isExpanded ? totalHeight : widget.titleHeight) + padding * 2,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(_borderRadius),
-        color: Color.fromARGB(255, 27, 27, 47),
+        color: Colors.blue[900],
       ),
       alignment: Alignment.topCenter,
       child: SingleChildScrollView(
@@ -88,11 +95,11 @@ class _ExpandableBoxState extends State<ExpandableBox> with TickerProviderStateM
     ).pad(padding, padding, padding / 2, padding / 2);
   }
 
-  Widget _createDropDownArrow() {
+  Widget _createDropDownArrow(double size) {
     return TweenAnimationBuilder<double>(
       duration: const Duration(milliseconds: animDurationMilliseconds),
       tween: Tween<double>(begin: rotBegin, end: rotEnd),
-      child: Icon(Icons.arrow_drop_down_circle_outlined),
+      child: Icon(Icons.arrow_drop_down_circle_outlined, size: size),
       builder: (context, value, child) {
         return Transform.rotate(
           angle: value,

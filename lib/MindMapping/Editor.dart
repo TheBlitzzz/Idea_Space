@@ -4,8 +4,9 @@ class Editor extends StatefulWidget {
   final MindMapFileModel fileData;
   final MindMapModel data;
   final void Function(String) renameFunc;
+  final void Function() updateLastEdit;
 
-  Editor(this.fileData, this.data, this.renameFunc);
+  Editor(this.fileData, this.data, this.renameFunc, this.updateLastEdit);
 
   @override
   _EditorState createState() => _EditorState(data);
@@ -248,16 +249,19 @@ class _EditorState extends State<Editor> {
   void _addPage() {
     factory.addNode(_lastTapPos, eNodeType.Page);
     setState(() => state = _showNodeWidgetsFlag);
+    widget.updateLastEdit();
   }
 
   void _addText() {
     factory.addNode(_lastTapPos, eNodeType.Text);
     setState(() => state = _showNodeWidgetsFlag);
+    widget.updateLastEdit();
   }
 
   void _addImage() {
     factory.addNode(_lastTapPos, eNodeType.Image);
     setState(() => state = _showNodeWidgetsFlag);
+    widget.updateLastEdit();
   }
 
   //endregion
@@ -282,8 +286,9 @@ class _EditorState extends State<Editor> {
       node.width = (_nodeStartSize.width + dx).abs();
       node.height = (_nodeStartSize.height + dy).abs();
       node.moveTo(Offset(_nodeStartPos.dx + offsetX, _nodeStartPos.dy + offsetY));
-      widget.data.save();
     });
+    widget.data.save();
+    widget.updateLastEdit();
   }
 
   void nodeTranslationStart(DragStartDetails details, BaseNodeModel node) {
@@ -295,8 +300,9 @@ class _EditorState extends State<Editor> {
     setState(() {
       Offset dragVector = details.localPosition - _dragStartPos;
       node.moveTo(_nodeStartPos + dragVector);
-      widget.data.save();
     });
+    widget.data.save();
+    widget.updateLastEdit();
   }
 
   //endregion
@@ -304,6 +310,7 @@ class _EditorState extends State<Editor> {
   //region Node Tools
   void _editNode(BaseNodeModel node) {
     node.edit(context, onEndEdit: () => setState(() => widget.data.save()));
+    widget.updateLastEdit();
   }
 
   void _startLinking(BaseNodeModel node) {
@@ -312,12 +319,14 @@ class _EditorState extends State<Editor> {
 
   void _editNodeColour(BaseNodeModel node, Color newColour) {
     setState(() => node.colour = newColour.value);
+    widget.updateLastEdit();
     widget.data.save();
   }
 
   void _deleteNode(BaseNodeModel node) {
     debugPrint("Delete");
     factory.deleteNode(node);
+    widget.updateLastEdit();
     setState(() => state = _showNodeWidgetsFlag);
   }
 //endregion
